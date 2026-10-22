@@ -1,0 +1,46 @@
+{
+  "name": "kasari-garne",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Kasari Garne (कसरी गर्ने?) — simple Nepali guides to Nepal government online services.",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --test src/lib/search/search.test.ts src/lib/admin/validate.test.ts",
+    "subtitles": "node --experimental-strip-types scripts/export-subtitles.ts",
+    "check-links": "node --experimental-strip-types scripts/check-links.ts",
+    "seed": "node --experimental-strip-types scripts/seed-supabase.ts",
+    "sync-guides": "node --env-file=.env.local --experimental-strip-types scripts/sync-guide-content.ts"
+  },
+  "dependencies": {
+    "@fontsource/mukta": "^5.1.0",
+    "@fontsource/poppins": "^5.1.0",
+    "@mintplex-labs/piper-tts-web": "^1.0.5",
+    "@supabase/ssr": "0.5.2",
+    "@supabase/supabase-js": "2.118.0",
+    "iceberg-js": "^0.8.1",
+    "lucide-react": "^0.468.0",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "server-only": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "overrides": {
+    "onnxruntime-web": "1.18.0"
+  }
+}

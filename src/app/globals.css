@@ -1,0 +1,133 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --text-scale: 1;
+  color-scheme: light;
+}
+html { font-size: calc(100% * var(--text-scale)); -webkit-text-size-adjust: 100%; }
+html[data-text="lg"] { --text-scale: 1.125; }
+html[data-text="xl"] { --text-scale: 1.25; }
+
+body {
+  @apply bg-paper text-ink font-sans antialiased;
+  line-height: 1.65;
+  text-rendering: optimizeLegibility;
+}
+/* Devanagari needs a little more line height than Latin. */
+:lang(ne) body, [lang="ne"] { line-height: 1.75; }
+.latin, [lang="en"] { font-family: Poppins, Mukta, system-ui, sans-serif; }
+
+h1, h2, h3 { @apply text-ink; line-height: 1.3; letter-spacing: -0.005em; }
+
+:focus-visible { outline: 3px solid #1F3F8F; outline-offset: 2px; border-radius: 6px; }
+
+@layer components {
+  .container-page { @apply mx-auto w-full max-w-5xl px-4 sm:px-6; }
+  .card { @apply rounded-2xl border border-paper-line bg-white shadow-card; }
+  /* Buttons: colour eases on hover, a slight press on tap. */
+  .btn { @apply inline-flex min-h-[48px] items-center justify-center gap-2 rounded-xl px-5 text-base font-semibold transition-[background-color,border-color,color,box-shadow,transform] duration-150 ease-[cubic-bezier(.2,.8,.2,1)] active:scale-[.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100; }
+  .btn-primary { @apply btn bg-brand text-white hover:bg-brand-dark active:bg-brand-dark; }
+  .btn-secondary { @apply btn border border-paper-line bg-white text-ink hover:border-ink-faint hover:bg-paper-warm; }
+  .btn-ghost { @apply btn min-h-[44px] px-3 font-medium text-ink-soft hover:bg-paper-warm hover:text-ink; }
+  .chip { @apply inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold; }
+  .link { @apply font-medium text-sky underline decoration-sky/30 underline-offset-4 transition-colors duration-150 hover:decoration-sky; }
+  /* Clickable panels and cards: border and a 1px lift on hover. */
+  .lift { @apply transition-[border-color,transform,box-shadow,background-color] duration-200 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-px hover:border-ink-faint/50 hover:shadow-card active:translate-y-0; }
+  /* Children appear one after another, quickly enough never to block a tap. */
+  .stagger > * { @apply animate-rise; }
+  .stagger > *:nth-child(2) { animation-delay: 40ms; }
+  .stagger > *:nth-child(3) { animation-delay: 80ms; }
+  .stagger > *:nth-child(4) { animation-delay: 120ms; }
+  .stagger > *:nth-child(5) { animation-delay: 160ms; }
+  .stagger > *:nth-child(n+6) { animation-delay: 200ms; }
+  .section-title { @apply text-xl font-bold sm:text-[1.4rem]; }
+  .page-title { @apply text-2xl font-bold leading-tight sm:text-3xl; }
+  .section { @apply py-10 sm:py-14; }
+  .muted { @apply text-sm text-ink-faint; }
+  /* Quiet bordered panel without shadow, for lists and secondary blocks. */
+  .panel { @apply rounded-2xl border border-paper-line bg-white; }
+  .pill { @apply inline-flex min-h-[40px] shrink-0 items-center rounded-full border border-paper-line bg-white px-3.5 text-sm font-medium text-ink-soft transition-colors duration-150 hover:border-ink-faint hover:text-ink active:bg-paper-warm; }
+  .pill-active { @apply border-ink bg-ink text-white hover:border-ink hover:text-white; }
+  /*
+   * Content types on guide pages each have one look, used everywhere:
+   *   note-warn     amber: warnings, mistakes, things not yet confirmed
+   *   note-tip      blue: help, simpler wording, examples
+   *   note-official green: the official government website
+   *   fact-box      neutral: fees and other figures
+   */
+  .note { @apply rounded-xl border-l-[3px] px-4 py-3 text-[0.95rem] leading-relaxed; }
+  .note-warn { @apply note border-warn/70 bg-warn-tint text-ink; }
+  .note-tip { @apply note border-sky/60 bg-sky-tint text-ink; }
+  .note-official { @apply rounded-2xl border border-ok/25 bg-ok-tint/50; }
+  .fact-box { @apply rounded-xl bg-paper-warm px-4 py-3; }
+  .note-label { @apply mb-1 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide; }
+
+  /*
+   * Guide body: every section sits in its own white box on a light warm page,
+   * with one border, one radius and one padding everywhere. What's inside each box
+   * keeps the layout that suits it (checklist, steps, fee list, notes, timeline).
+   */
+  .guide-body { @apply grid gap-3 sm:gap-4; }
+  .guide-body > section { @apply overflow-hidden rounded-2xl border border-paper-line bg-white p-5 sm:p-6; }
+  /* Rows that run edge to edge inside a box (FAQ). */
+  .box-bleed { @apply -mx-5 -mb-5 border-t border-paper-line sm:-mx-6 sm:-mb-6; }
+
+  /* Round tick for checklists: a real checkbox, drawn as a circle that fills green. */
+  .tick { @apply mt-px h-6 w-6 shrink-0 cursor-pointer appearance-none rounded-full border-2 border-ink-faint/35 bg-white bg-center bg-no-repeat transition-[background-color,border-color] duration-150 hover:border-ok/60 checked:border-ok checked:bg-ok; }
+  .tick:checked { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E"); background-size: 14px; }
+  .tick:focus-visible { outline: 3px solid #1F3F8F; outline-offset: 2px; }
+  @media print { .tick { border-color: #555; } }
+
+  /* Collapsible block used for FAQ, mistakes, sources. */
+  .disclosure > summary { @apply flex min-h-[52px] cursor-pointer list-none items-center justify-between gap-3 px-4 font-semibold transition-colors duration-150 hover:bg-paper-warm/60 sm:px-5; }
+  .disclosure > summary::-webkit-details-marker { display: none; }
+  .disclosure > summary::after { content: "+"; @apply text-xl font-normal leading-none text-ink-faint transition-transform duration-200 ease-[cubic-bezier(.2,.8,.2,1)]; }
+  /* Opened content fades in just below the summary. */
+  details[open] > :not(summary) { @apply animate-rise; }
+  .disclosure[open] > summary::after { transform: rotate(45deg); }
+  .disclosure-body { @apply px-4 pb-4 sm:px-5 sm:pb-5; }
+  .input { @apply min-h-[48px] w-full rounded-xl border border-paper-line bg-white px-4 text-base text-ink placeholder:text-ink-faint focus:border-sky focus:outline-none focus:ring-2 focus:ring-sky/20; }
+  .label { @apply mb-1.5 block text-sm font-semibold text-ink; }
+}
+
+/* ---------- Homepage hero ---------- */
+/* A faint dotted texture that fades out towards the edges. */
+.hero-texture {
+  background-color: #FAF8F5;
+  background-image: radial-gradient(rgba(27, 34, 48, 0.07) 1px, transparent 1px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 40%, transparent 100%);
+          mask-image: radial-gradient(ellipse 80% 70% at 50% 40%, #000 40%, transparent 100%);
+}
+/* A brush-like underline that draws itself once under the key word. */
+.hero-mark {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 12' preserveAspectRatio='none'%3E%3Cpath d='M2 8.5C40 3.5 90 2.5 198 6' fill='none' stroke='%23B4232C' stroke-width='4' stroke-linecap='round' opacity='.85'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 0 92%;
+  background-size: 0% 0.32em;
+  white-space: nowrap;
+  padding-bottom: 0.08em;
+  animation: hero-draw 0.7s cubic-bezier(.2,.8,.2,1) 0.35s forwards;
+}
+@keyframes hero-draw { to { background-size: 100% 0.32em; } }
+/* Rotating example question inside the search box. */
+@keyframes hint-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.hint-in { animation: hint-in 0.35s cubic-bezier(.2,.8,.2,1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-mark { animation: none; background-size: 100% 0.32em; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+}
+html[data-motion="reduce"] .hero-mark { animation: none; background-size: 100% 0.32em; }
+html[data-motion="reduce"] *, html[data-motion="reduce"] *::before, html[data-motion="reduce"] *::after {
+  animation-duration: 0.01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important;
+}
+
+@media print {
+  header, footer, nav, .no-print { display: none !important; }
+  .card { box-shadow: none; border-color: #ccc; }
+  body { font-size: 12pt; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 10pt; color: #555; }
+}

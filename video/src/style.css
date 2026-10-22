@@ -1,0 +1,5 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@import url("../node_modules/@fontsource/mukta/devanagari-400.css");
+body { font-family: Mukta, Poppins, sans-serif; }
