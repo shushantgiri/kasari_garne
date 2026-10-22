@@ -103,7 +103,7 @@ export function AssistantChat({ locale, knowledge, serviceName, suggestions }: {
       // No Nepali voice on this phone: use the free downloaded one (ask first, it's ~28 MB).
       if (nepaliVoiceAccepted() && audioRef.current) {
         void speakNepali(text, audioRef.current).catch((e) => {
-          console.error("[nepali voice]", e);
+          console.warn("[nepali voice]", e);
           setNeVoice({ state: "failed", pct: 0 });
         });
       } else {
@@ -159,7 +159,7 @@ export function AssistantChat({ locale, knowledge, serviceName, suggestions }: {
         if (text) return speakNepali(text, audio);
       })
       .catch((e) => {
-        console.error("[nepali voice]", e);
+        console.warn("[nepali voice]", e);
         setNeVoice({ state: "failed", pct: 0 });
       });
   };

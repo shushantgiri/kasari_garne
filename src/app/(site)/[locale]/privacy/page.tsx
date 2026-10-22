@@ -15,6 +15,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
         ["तपाईंकै फोनमा", "चेकलिस्टमा लगाएको चिन्ह र अक्षरको साइज तपाईंकै ब्राउजरमा (localStorage) मात्र रहन्छ। ब्राउजरको डाटा मेटाउँदा यो पनि मेटिन्छ।"],
         ["गणना", "भिडियो कति पटक चलाइयो भन्ने एउटा सङ्ख्या मात्र गनिन्छ — कसले हेर्‍यो भन्ने होइन। तेस्रो पक्षको ट्र्याकर वा विज्ञापन छैन।"],
         ["सहयोगीसँग कुरा गर्दा", "गाइडको “सोध्नुहोस्” सहयोगीले तपाईंकै ब्राउजरमा गाइडबाट जवाफ खोज्छ। प्रश्न कतै पठाइँदैन र सुरक्षित गरिँदैन। अन्तिम जानकारी सधैँ आधिकारिक वेबसाइटमै हेर्नुहोस्।"],
+        ["नेपाली आवाज", "तपाईंको फोनमा नेपाली आवाज छैन भने, तपाईंले अनुमति दिएपछि मात्र निःशुल्क खुला-स्रोत नेपाली आवाज (Piper) एक पटक डाउनलोड हुन्छ। यो Hugging Face, cdnjs र jsDelivr बाट आउँछ र तपाईंकै ब्राउजरमा रहन्छ। जवाफ पढ्ने काम फोनमै हुन्छ, कुनै शब्द कतै पठाइँदैन।"],
         ["बोलेर खोज्दा", "माइक्रोफोन थिचेर बोल्दा तपाईंको ब्राउजरको आफ्नै आवाज-पहिचान सेवाले (जस्तै Chrome मा Google) शब्द बुझ्छ। हामी आवाज रेकर्ड वा सुरक्षित गर्दैनौँ। नचाहे टाइप गरेर खोज्नुहोस्।"],
         ["आधिकारिक वेबसाइट", "“आधिकारिक वेबसाइट खोल्नुहोस्” थिचेपछि तपाईं सरकारी वेबसाइटमा पुग्नुहुन्छ। त्यहाँको गोपनीयता नियम सम्बन्धित निकायको हो।"],
       ]
@@ -24,6 +25,7 @@ export default async function PrivacyPage({ params }: { params: Promise<{ locale
         ["On your own device", "Checklist ticks and text size stay in your browser (localStorage) only. Clearing your browser data removes them."],
         ["Counting", "We count how many times a tutorial is played — a single number, not who watched it. No third-party trackers or ads."],
         ["Chat helper", "The guide's “Ask” helper finds answers in the guide, right in your browser. Your questions are not sent anywhere or saved. Always confirm on the official website."],
+        ["Nepali voice", "If your phone has no Nepali voice, a free open-source Nepali voice (Piper) is downloaded once, only after you agree. It comes from Hugging Face, cdnjs and jsDelivr and stays in your browser. Answers are read aloud on your phone; no text is sent anywhere."],
         ["Voice search", "When you tap the microphone, your browser's own speech service (for example Google, in Chrome) turns your words into text. We don't record or store your voice. You can always type instead."],
         ["Official websites", "When you open an official website you leave Kasari Garne; that agency's privacy rules apply there."],
       ];
