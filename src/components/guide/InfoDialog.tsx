@@ -6,9 +6,12 @@ import { X } from "lucide-react";
 /**
  * A button that opens a fixed popup (native <dialog>: focus stays inside, Esc closes).
  * The page behind doesn't scroll while it's open; long content scrolls inside the popup only.
+ * It rises in when opened and sinks out when closed (Esc, ✕ or a tap on the backdrop).
  */
-export function InfoDialog({ label, title, icon, closeLabel, children }: {
+export function InfoDialog({ label, title, icon, closeLabel, buttonClassName = "btn-secondary", children }: {
   label: string;
+  /** The opening button's look; a large secondary button unless set. */
+  buttonClassName?: string;
   title: string;
   icon?: React.ReactNode;
   closeLabel: string;
@@ -16,6 +19,8 @@ export function InfoDialog({ label, title, icon, closeLabel, children }: {
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const [open, setOpen] = useState(false);
+  // While true, the close animation plays; the dialog really closes when it ends.
+  const [closing, setClosing] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -30,21 +35,32 @@ export function InfoDialog({ label, title, icon, closeLabel, children }: {
     ref.current?.showModal();
     setOpen(true);
   };
-  const close = () => ref.current?.close();
+  const close = () => setClosing(true);
 
   return (
     <>
-      <button type="button" onClick={show} className="btn-secondary" aria-haspopup="dialog">
+      <button type="button" onClick={show} className={buttonClassName} aria-haspopup="dialog">
         {icon}
         {label}
       </button>
       <dialog
         ref={ref}
         onClose={() => setOpen(false)}
+        // Esc: animate out instead of vanishing.
+        onCancel={(e) => {
+          e.preventDefault();
+          close();
+        }}
+        onAnimationEnd={(e) => {
+          if (closing && e.target === ref.current) {
+            setClosing(false);
+            ref.current?.close();
+          }
+        }}
         // A click on the dimmed backdrop (the dialog element itself, outside the panel) closes it.
         onClick={(e) => e.target === ref.current && close()}
         aria-labelledby="info-dialog-title"
-        className="m-auto w-[min(94vw,40rem)] max-h-[88vh] overflow-hidden rounded-2xl border border-paper-line bg-white p-0 text-ink shadow-pop backdrop:bg-ink/40 open:animate-pop"
+        className={`m-auto w-[min(94vw,40rem)] max-h-[88vh] overflow-hidden rounded-2xl border border-paper-line bg-white p-0 text-left text-base font-normal text-ink shadow-pop backdrop:bg-ink/40 ${closing ? "is-closing animate-dialog-out" : "open:animate-dialog-in"}`}
       >
         <div className="flex max-h-[88vh] flex-col">
           <div className="flex items-center justify-between gap-3 border-b border-paper-line bg-paper-warm px-5 py-4 sm:px-6">

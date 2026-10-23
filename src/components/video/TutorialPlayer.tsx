@@ -47,7 +47,8 @@ function fmt(ms: number) {
   return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 }
 
-function ControlButton({ label, onClick, pressed, children }: { label: string; onClick: () => void; pressed?: boolean; children: React.ReactNode }) {
+/** Slightly smaller on phones so the whole control bar fits on one line. */
+function ControlButton({ label, onClick, pressed, className = "", children }: { label: string; onClick: () => void; pressed?: boolean; className?: string; children: React.ReactNode }) {
   return (
     <button
       type="button"
@@ -55,7 +56,7 @@ function ControlButton({ label, onClick, pressed, children }: { label: string; o
       aria-label={label}
       aria-pressed={pressed}
       title={label}
-      className={`grid h-11 min-w-11 place-items-center rounded-xl px-2 text-ink hover:bg-paper-warm ${pressed ? "bg-sky-tint text-sky" : ""}`}
+      className={`grid h-10 min-w-10 shrink-0 place-items-center rounded-xl px-1.5 text-ink hover:bg-paper-warm sm:h-11 sm:min-w-11 sm:px-2 ${pressed ? "bg-sky-tint text-sky" : ""} ${className}`}
     >
       {children}
     </button>
@@ -218,6 +219,13 @@ function LivePlayer({ locale, script, video }: Props) {
     return () => window.removeEventListener("kg:play", h);
   }, [seek, script.slug]);
 
+  // "kg:pause": the player was hidden (e.g. someone switched to the written steps).
+  useEffect(() => {
+    const h = () => setPlaying(false);
+    window.addEventListener("kg:pause", h);
+    return () => window.removeEventListener("kg:pause", h);
+  }, []);
+
   const labels = { step: t.step, demo: t.demoLabel, unconfirmed: t.needsReview, digits: locale };
   const ne = locale === "ne";
 
@@ -272,21 +280,21 @@ function LivePlayer({ locale, script, video }: Props) {
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-1 px-2 pb-2">
+      <div className="flex items-center gap-0.5 px-1.5 pb-2 sm:gap-1 sm:px-2">
         <ControlButton label={playing ? t.pause : ended ? t.replay : t.play} onClick={toggle}>
           {playing ? <Pause className="h-5 w-5" aria-hidden="true" /> : <Play className="h-5 w-5" aria-hidden="true" />}
         </ControlButton>
-        <ControlButton label={t.replay} onClick={() => { seek(0); setPlaying(true); }}>
+        <ControlButton label={t.replay} onClick={() => { seek(0); setPlaying(true); }} className="hidden sm:grid">
           <RotateCcw className="h-5 w-5" aria-hidden="true" />
         </ControlButton>
-        <span className="latin px-1 text-sm tabular-nums text-ink-soft">{fmt(ms)} / {fmt(script.totalMs)}</span>
+        <span className="latin min-w-0 truncate px-1 text-xs tabular-nums text-ink-soft sm:text-sm">{fmt(ms)} / {fmt(script.totalMs)}</span>
         <span className="flex-1" />
         <label className="sr-only" htmlFor={`speed-${script.slug}`}>{t.speed}</label>
         <select
           id={`speed-${script.slug}`}
           value={speed}
           onChange={(e) => setSpeed(Number(e.target.value))}
-          className="latin h-11 rounded-xl border border-paper-line bg-white px-2 text-sm"
+          className="latin h-10 shrink-0 rounded-xl border border-paper-line bg-white px-1.5 text-sm sm:h-11 sm:px-2"
           title={t.speed}
         >
           {SPEEDS.map((s) => <option key={s} value={s}>{s}×</option>)}
@@ -372,6 +380,12 @@ function FilePlayer({ locale, script, video }: Props) {
     return () => window.removeEventListener("kg:play", h);
   }, [jump]);
 
+  useEffect(() => {
+    const h = () => ref.current?.pause();
+    window.addEventListener("kg:pause", h);
+    return () => window.removeEventListener("kg:pause", h);
+  }, []);
+
   const src = lowData && video.lowSrc ? video.lowSrc : video.src!;
 
   if (failed) {
@@ -420,7 +434,7 @@ function FilePlayer({ locale, script, video }: Props) {
         </div>
       )}
       </div>
-      <div className="flex flex-wrap items-center gap-1 px-2 py-2">
+      <div className="flex items-center gap-0.5 px-1.5 py-2 sm:gap-1 sm:px-2">
         <ControlButton label={t.replay} onClick={() => jump(0)}>
           <RotateCcw className="h-5 w-5" aria-hidden="true" />
         </ControlButton>
@@ -433,13 +447,13 @@ function FilePlayer({ locale, script, video }: Props) {
             setSpeed(s);
             if (ref.current) ref.current.playbackRate = s;
           }}
-          className="latin h-11 rounded-xl border border-paper-line bg-white px-2 text-sm"
+          className="latin h-10 shrink-0 rounded-xl border border-paper-line bg-white px-1.5 text-sm sm:h-11 sm:px-2"
         >
           {SPEEDS.map((s) => <option key={s} value={s}>{s}×</option>)}
         </select>
         {video.lowSrc && (
           <ControlButton label={t.lowData} pressed={lowData} onClick={() => setLowData((v) => !v)}>
-            <span className="flex items-center gap-1 text-sm">{lowData ? <WifiLow className="h-5 w-5" aria-hidden="true" /> : <Wifi className="h-5 w-5" aria-hidden="true" />}{t.lowData}</span>
+            <span className="flex items-center gap-1 text-sm">{lowData ? <WifiLow className="h-5 w-5" aria-hidden="true" /> : <Wifi className="h-5 w-5" aria-hidden="true" />}<span className="hidden sm:inline">{t.lowData}</span></span>
           </ControlButton>
         )}
         <span className="flex-1" />

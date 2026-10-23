@@ -1,4 +1,8 @@
 import type { Locale, Localized } from "./content/types";
+import NepaliDateModule from "nepali-date-converter";
+
+// The package is UMD: bundlers hand over the class itself, plain Node hands over { default }.
+const NepaliDate = (NepaliDateModule as unknown as { default?: typeof NepaliDateModule }).default ?? NepaliDateModule;
 
 export function isLocale(v: string): v is Locale {
   return v === "ne" || v === "en";
@@ -19,14 +23,25 @@ export function digits(n: number | string, locale: Locale): string {
 const NE_MONTHS = ["जनवरी", "फेब्रुअरी", "मार्च", "अप्रिल", "मे", "जुन", "जुलाई", "अगस्ट", "सेप्टेम्बर", "अक्टोबर", "नोभेम्बर", "डिसेम्बर"];
 const EN_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-/** Formats an ISO date (AD). Shown as AD with month names to avoid BS conversion errors. */
+/**
+ * Formats an ISO date as Bikram Sambat first, with the AD date in brackets,
+ * e.g. "५ कार्तिक २०८३ (२२ अक्टोबर २०२६)" or "5 Kartik 2083 BS (22 Oct 2026)".
+ * The BS date comes from nepali-date-converter (checked against known New Year dates);
+ * if it can't convert a date, only the AD date is shown.
+ */
 export function formatDate(iso: string, locale: Locale): string {
   if (!iso) return "";
   const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
   if (!y || !m || !d) return iso;
-  return locale === "ne"
-    ? `${digits(d, "ne")} ${NE_MONTHS[m - 1]} ${digits(y, "ne")}`
-    : `${d} ${EN_MONTHS[m - 1]} ${y}`;
+  const ad = locale === "ne" ? `${digits(d, "ne")} ${NE_MONTHS[m - 1]} ${digits(y, "ne")}` : `${d} ${EN_MONTHS[m - 1]} ${y}`;
+  try {
+    const bs = new NepaliDate(new Date(y, m - 1, d));
+    return locale === "ne"
+      ? `${digits(bs.getDate(), "ne")} ${bs.format("MMMM", "np")} ${digits(bs.getYear(), "ne")} (${ad})`
+      : `${bs.getDate()} ${bs.format("MMMM", "en")} ${bs.getYear()} BS (${ad})`;
+  } catch {
+    return ad;
+  }
 }
 
 export const ui = {

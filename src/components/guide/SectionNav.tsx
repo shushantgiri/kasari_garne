@@ -7,22 +7,19 @@ import type { Locale } from "@/lib/content/types";
 export interface NavSection { id: string; label: string }
 
 /**
- * "On this page" for long guides: one small floating button that shows the section you're in
- * and opens a short text menu. It floats instead of sticking under the site header, so there
- * are never two stacked sticky bars. Links are plain #anchors, so history and direct links work.
+ * Which section is on screen: the last one whose top has passed the upper third of the viewport.
+ * Also which of the sections are on the page now, and whether the page has scrolled past the header.
  */
-export function SectionNav({ locale, sections }: { locale: Locale; sections: NavSection[] }) {
-  const ne = locale === "ne";
+export function useActiveSection(ids: string[]) {
+  const key = ids.join(",");
   const [current, setCurrent] = useState<string | null>(null);
-  const [visible, setVisible] = useState(false);
-  const [open, setOpen] = useState(false);
-  const [present, setPresent] = useState<Set<string>>(() => new Set(sections.map((s) => s.id)));
-  const rootRef = useRef<HTMLDivElement>(null);
+  const [scrolled, setScrolled] = useState(false);
+  const [present, setPresent] = useState<Set<string>>(() => new Set(ids));
 
-  // Which section is on screen: the last one whose top has passed the upper third of the viewport.
   useEffect(() => {
+    const list = key.split(",");
     const update = () => {
-      const els = sections.map((s) => document.getElementById(s.id)).filter((e): e is HTMLElement => !!e);
+      const els = list.map((id) => document.getElementById(id)).filter((e): e is HTMLElement => !!e);
       setPresent((prev) => {
         const next = new Set(els.map((e) => e.id));
         return next.size === prev.size && [...next].every((x) => prev.has(x)) ? prev : next;
@@ -31,7 +28,7 @@ export function SectionNav({ locale, sections }: { locale: Locale; sections: Nav
       let id: string | null = null;
       for (const el of els) if (el.getBoundingClientRect().top <= line) id = el.id;
       setCurrent(id);
-      setVisible(window.scrollY > 320);
+      setScrolled(window.scrollY > 320);
     };
     update();
     window.addEventListener("scroll", update, { passive: true });
@@ -40,7 +37,21 @@ export function SectionNav({ locale, sections }: { locale: Locale; sections: Nav
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
     };
-  }, [sections]);
+  }, [key]);
+
+  return { current, present, scrolled };
+}
+
+/**
+ * "On this page" for long guides: one small floating button that shows the section you're in
+ * and opens a short text menu. It floats instead of sticking under the site header, so there
+ * are never two stacked sticky bars. Links are plain #anchors, so history and direct links work.
+ */
+export function SectionNav({ locale, sections }: { locale: Locale; sections: NavSection[] }) {
+  const ne = locale === "ne";
+  const { current, present, scrolled: visible } = useActiveSection(sections.map((s) => s.id));
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
 
   // Close on Escape or a tap outside.
   useEffect(() => {
@@ -62,7 +73,7 @@ export function SectionNav({ locale, sections }: { locale: Locale; sections: Nav
   return (
     <div
       ref={rootRef}
-      className={`no-print fixed inset-x-0 bottom-4 z-30 flex justify-center px-4 transition-[opacity,transform] duration-200 ${visible || open ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"}`}
+      className={`no-print fixed inset-x-0 bottom-[calc(5rem+env(safe-area-inset-bottom))] z-30 sm:bottom-4 flex justify-center px-4 transition-[opacity,transform] duration-200 ${visible || open ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"}`}
     >
       <div className="relative">
         {open && (

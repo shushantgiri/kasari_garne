@@ -7,8 +7,22 @@ import { dict, isLocale, tr } from "@/lib/i18n";
 import { ServiceCard } from "@/components/home/ServiceCard";
 import { SearchBox } from "@/components/search/SearchBox";
 import { toTeasers } from "@/lib/search/teaser";
+import { RotatingWord } from "@/components/ui/RotatingWord";
 
 export const revalidate = 300;
+
+/** Short everyday names for the rotating word in the title; guides not listed here are left out. */
+const SHORT: Record<string, { ne: string; en: string }> = {
+  "driving-licence": { ne: "लाइसेन्स", en: "driving licence" },
+  passport: { ne: "राहदानी", en: "passport" },
+  "national-id": { ne: "राष्ट्रिय परिचयपत्र", en: "national ID" },
+  pan: { ne: "प्यान नम्बर", en: "PAN number" },
+  "police-clearance": { ne: "चारित्रिक प्रमाणपत्र", en: "police report" },
+  "voter-registration": { ne: "मतदाता परिचयपत्र", en: "voter ID" },
+};
+
+/** Red gradient text; the vertical padding keeps Devanagari marks inside the clip. */
+const GRADIENT = "bg-gradient-to-r from-[#D63A44] to-brand-dark bg-clip-text py-[0.12em] text-transparent";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -37,44 +51,58 @@ export default async function GuidesPage({
 
   const activeCat = categories.find((c) => c.id === category);
   const activeDept = departments.find((d) => d.id === department);
-  const pill = (active: boolean) => `pill ${active ? "pill-active" : ""}`;
+
+  // Short names of the ready guides, for the rotating word in the title.
+  const rotating = visible.filter((g) => g.published && SHORT[g.slug]).map((g) => SHORT[g.slug][locale]);
 
   return (
-    <div className="container-page py-8 sm:py-10">
-      <h1 className="page-title">{activeCat ? tr(activeCat.name, locale) : activeDept ? tr(activeDept.name, locale) : t.allGuides}</h1>
+    <>
+      {/* Header: the same soft colour mesh as the homepage, a centred title, a count, and search. */}
+      <section className="mesh-bg grain overflow-hidden border-b border-paper-line">
+        <div className="container-page py-10 text-center sm:py-14">
+          <h1 className="animate-rise text-[2rem] font-bold leading-[1.15] tracking-[-0.02em] sm:text-[2.75rem]">
+            {activeCat ? (
+              tr(activeCat.name, locale)
+            ) : activeDept ? (
+              tr(activeDept.name, locale)
+            ) : rotating.length > 0 ? (
+              // "How to get a / [licence → passport → national ID]"; in Nepali the word comes first.
+              <>
+                {!ne && <span className="block">How to get a</span>}
+                <span className="block">
+                  <RotatingWord words={rotating} className={GRADIENT} />
+                </span>
+                {ne && <span className="block">कसरी बनाउने?</span>}
+              </>
+            ) : (
+              t.allGuides
+            )}
+          </h1>
+          <p className="mx-auto mt-3 max-w-md animate-rise text-balance text-ink-soft [animation-delay:60ms] sm:text-lg">
+            {ne ? "सजिलो भाषामा, चरण-चरण मार्गदर्शन।" : "Step-by-step help, in simple words."}
+          </p>
+          <div className="relative z-20 mx-auto mt-7 max-w-xl animate-rise text-left [animation-delay:120ms]">
+            <div className="pointer-events-none absolute -inset-x-6 -inset-y-4 rounded-[2rem] bg-gradient-to-r from-sky/10 via-brand/10 to-sky/10 blur-2xl" aria-hidden="true" />
+            <div className="relative">
+              <SearchBox locale={locale} teasers={toTeasers(guides, departments)} size="lg" />
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <div className="mt-4 max-w-xl">
-        <SearchBox locale={locale} teasers={toTeasers(guides, departments)} size="md" />
-      </div>
-
-      <nav aria-label={ne ? "विषय" : "Categories"} className="mt-3 flex gap-2 overflow-x-auto pb-1">
-        <Link href={`/${locale}/guides`} className={pill(!category && !department)}>{ne ? "सबै" : "All"}</Link>
-        {categories.map((c) => (
-          <Link key={c.id} href={`/${locale}/guides?category=${c.id}`} className={pill(category === c.id)} aria-current={category === c.id ? "page" : undefined}>
-            {tr(c.name, locale)}
-          </Link>
-        ))}
-      </nav>
-      <nav aria-label={t.byDepartment} className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-        <span className="text-ink-faint">{t.byDepartment}:</span>
-        {departments.map((d) => (
-          <Link key={d.id} href={`/${locale}/guides?department=${d.id}`} className={`inline-flex min-h-[44px] items-center rounded-md px-2 ${department === d.id ? "bg-sky-tint font-semibold text-sky" : "text-ink-soft hover:text-ink"}`}>
-            {tr(d.short, locale)}
-          </Link>
-        ))}
-      </nav>
-
+      <div className="container-page py-8 sm:py-10">
       {visible.length > 0 ? (
-        <ul className="stagger mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+        <ul className="stagger grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
           {visible.map((g) => <li key={g.slug}><ServiceCard guide={g} locale={locale} /></li>)}
         </ul>
       ) : (
-        <div className="mt-8 rounded-2xl border border-dashed border-paper-line p-8 text-center">
+        <div className="rounded-2xl border border-dashed border-paper-line p-8 text-center">
           <p className="font-semibold">{ne ? "यस विषयमा गाइड अझै छैन।" : "No guides in this category yet."}</p>
           <p className="mt-1 text-ink-soft">{ne ? "अर्को विषय हेर्नुहोस्, वा गाइड माग्नुहोस्।" : "Try another category, or request a guide."}</p>
           <Link href={`/${locale}/request`} className="btn-primary mt-4">{t.requestGuide}</Link>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

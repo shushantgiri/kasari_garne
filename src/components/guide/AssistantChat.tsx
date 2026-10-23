@@ -1,13 +1,20 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { MessageCircle, Mic, SendHorizontal, Square, Volume2, VolumeX, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { ArrowRight, MessageCircle, Mic, SendHorizontal, Square, Volume2, VolumeX, X } from "lucide-react";
 import type { Locale } from "@/lib/content/types";
 import { looksPersonal } from "@/lib/privacy";
 import { answer, type Knowledge } from "@/lib/assist/answer";
+import { buildIndex, search, type Searchable } from "@/lib/search/search";
 import { NEPALI_VOICE_MB, nepaliVoiceAccepted, prepareNepaliVoice, speakNepali, stopNepali, unlockAudio } from "@/lib/assist/nepaliVoice";
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = { role: "user" | "assistant"; content: string; link?: { href: string; label: string } };
+
+/** On pages that cover many services (the homepage): each guide, findable by search, with what the helper knows about it. */
+export interface LibraryGuide extends Searchable {
+  knowledge: Record<Locale, Knowledge>;
+}
 
 /* Browser speech recognition (not in every TypeScript DOM lib). */
 interface Recognition {
@@ -30,10 +37,24 @@ const getRecognition = (): RecognitionCtor | undefined =>
  * A chat helper for one guide: type or speak a question, get a short answer drawn from the guide.
  * Free: no AI or outside service. Answers come from the guide itself (lib/assist/answer.ts).
  * Answers can be read aloud. Nothing is saved or sent anywhere.
+ * Given a `library` instead of one guide's `knowledge`, it first finds which guide a question is
+ * about (with the site's search), answers from that guide and links to it; follow-ups stay on that guide.
  */
-export function AssistantChat({ locale, knowledge, serviceName, suggestions }: { locale: Locale; knowledge: Record<Locale, Knowledge>; serviceName: string; suggestions: string[] }) {
+export function AssistantChat({ locale, knowledge, library, serviceName, suggestions }: {
+  locale: Locale;
+  knowledge?: Record<Locale, Knowledge>;
+  library?: LibraryGuide[];
+  serviceName: string;
+  suggestions: string[];
+}) {
   const ne = locale === "ne";
   const [open, setOpen] = useState(false);
+  // The Ask button can be dragged anywhere; let go and it settles at the nearest side.
+  // Where it settled (side + height as a share of the screen) is remembered on this device.
+  const [spot, setSpot] = useState<{ side: "left" | "right"; y: number } | null>(null);
+  const [drag, setDrag] = useState<{ x: number; y: number } | null>(null);
+  const grab = useRef<{ dx: number; dy: number; sx: number; sy: number; moved: boolean } | null>(null);
+  const justDragged = useRef(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -50,6 +71,9 @@ export function AssistantChat({ locale, knowledge, serviceName, suggestions }: {
   const recRef = useRef<Recognition | null>(null);
   const viaVoice = useRef(false);
   const purpose = useRef<string | undefined>(undefined);
+  const index = useMemo(() => (library ? buildIndex(library) : []), [library]);
+  // The guide the conversation is about, on the homepage.
+  const topic = useRef<LibraryGuide | undefined>(undefined);
 
   useEffect(() => {
     setCanVoice(!!getRecognition());
@@ -135,13 +159,38 @@ export function AssistantChat({ locale, knowledge, serviceName, suggestions }: {
     viaVoice.current = false;
     // Nepali script in the question gets a Nepali answer, whatever the page language.
     const lang: Locale = ne || /[ऀ-ॿ]/.test(q) ? "ne" : "en";
-    const reply = answer(knowledge[lang], q, purpose.current);
-    purpose.current = reply.purpose;
+    let k = knowledge?.[lang];
+    let link: Msg["link"];
+    if (library) {
+      // If nothing matches, try again without Nepali case endings ("लाइसेन्सको" → "लाइसेन्स").
+      const hit =
+        search(index, q, { limit: 1 })[0] ??
+        search(index, q.replace(/(को|का|की|मा|लाई|ले|बाट|सँग)(?=[\s?।,!]|$)/g, ""), { limit: 1 })[0];
+      const found = hit && library.find((g) => g.slug === hit.slug);
+      if (found && found !== topic.current) {
+        topic.current = found;
+        purpose.current = undefined;
+      }
+      if (topic.current) {
+        k = topic.current.knowledge[lang];
+        link = { href: `/${locale}/guide/${topic.current.slug}`, label: ne ? "पूरा गाइड हेर्नुहोस्" : "Open the full guide" };
+      }
+    }
+    let reply: string;
+    if (k) {
+      const r = answer(k, q, purpose.current);
+      purpose.current = r.purpose;
+      reply = library ? `${k.name}\n\n${r.text}` : r.text;
+    } else {
+      // No service recognised yet: ask which one, naming the guides we have.
+      const names = (library ?? []).map((g) => g.knowledge[lang].name).join(", ");
+      reply = lang === "ne" ? `कुन सेवाबारे सोध्नुभएको हो? जस्तै: ${names}।` : `Which service is this about? For example: ${names}.`;
+    }
     // A short pause so the answer reads like a reply, not a page jump.
     window.setTimeout(() => {
-      setMessages([...next, { role: "assistant", content: reply.text }]);
+      setMessages([...next, { role: "assistant", content: reply, link }]);
       setBusy(false);
-      if (speak || spokenQuestion) readAloud(reply.text, lang);
+      if (speak || spokenQuestion) readAloud(reply, lang);
     }, 450);
   };
 
@@ -191,14 +240,83 @@ export function AssistantChat({ locale, knowledge, serviceName, suggestions }: {
     rec.start();
   };
 
+  useEffect(() => {
+    try {
+      const v = JSON.parse(localStorage.getItem("kg-ask-spot") ?? "null");
+      if (v && (v.side === "left" || v.side === "right") && typeof v.y === "number") setSpot(v);
+    } catch {}
+  }, []);
+
+  // Keep it below the site header and above the bottom edge.
+  // On phones, stay above the bottom tab bar too.
+  const clampY = (y: number, h: number) => Math.min(Math.max(y, 72), window.innerHeight - h - (window.innerWidth < 640 ? 84 : 12));
+
+  const onPointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    grab.current = { dx: e.clientX - r.left, dy: e.clientY - r.top, sx: e.clientX, sy: e.clientY, moved: false };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const onPointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const g = grab.current;
+    if (!g) return;
+    // A small wobble is still a tap.
+    if (!g.moved && Math.hypot(e.clientX - g.sx, e.clientY - g.sy) < 8) return;
+    g.moved = true;
+    const r = e.currentTarget.getBoundingClientRect();
+    setDrag({ x: Math.min(Math.max(e.clientX - g.dx, 8), window.innerWidth - r.width - 8), y: clampY(e.clientY - g.dy, r.height) });
+  };
+  const onPointerUp = (e: React.PointerEvent<HTMLButtonElement>) => {
+    const g = grab.current;
+    grab.current = null;
+    if (!g?.moved) return;
+    justDragged.current = true;
+    const r = e.currentTarget.getBoundingClientRect();
+    const next = { side: r.left + r.width / 2 < window.innerWidth / 2 ? ("left" as const) : ("right" as const), y: r.top / window.innerHeight };
+    setSpot(next);
+    setDrag(null);
+    try {
+      localStorage.setItem("kg-ask-spot", JSON.stringify(next));
+    } catch {}
+  };
+  const onPointerCancel = () => {
+    grab.current = null;
+    setDrag(null);
+  };
+
+  const placed: React.CSSProperties | undefined = drag
+    ? { left: drag.x, top: drag.y, right: "auto", bottom: "auto" }
+    : spot
+      ? {
+          [spot.side]: 16,
+          [spot.side === "left" ? "right" : "left"]: "auto",
+          top: `clamp(72px, ${(spot.y * 100).toFixed(2)}vh, calc(100vh - 140px))`,
+          bottom: "auto",
+        }
+      : undefined;
+
   return (
     <>
       <audio ref={audioRef} preload="none" playsInline className="hidden" />
       {!open && (
         <button
           type="button"
-          onClick={() => setOpen(true)}
-          className="no-print fixed bottom-20 right-4 z-30 inline-flex h-14 items-center gap-2 rounded-full bg-brand px-4 text-white shadow-pop transition-transform duration-150 hover:bg-brand-dark active:scale-95 sm:bottom-6 sm:right-6 sm:px-5"
+          onClick={() => {
+            // The click that ends a drag shouldn't open the chat.
+            if (justDragged.current) {
+              justDragged.current = false;
+              return;
+            }
+            setOpen(true);
+          }}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerCancel}
+          style={placed}
+          title={ne ? "थिचेर सार्न सकिन्छ" : "Drag to move"}
+          className={`no-print fixed bottom-[calc(9rem+env(safe-area-inset-bottom))] right-4 z-30 inline-flex h-14 touch-none select-none items-center gap-2 rounded-full bg-brand px-4 text-white transition-[transform,box-shadow] duration-150 hover:bg-brand-dark sm:bottom-6 sm:right-6 sm:px-5 ${
+            drag ? "scale-105 cursor-grabbing shadow-[0_14px_32px_rgba(27,34,48,.3)]" : "cursor-grab shadow-pop active:scale-95"
+          }`}
           aria-haspopup="dialog"
         >
           <MessageCircle className="h-6 w-6" aria-hidden="true" />
@@ -257,7 +375,14 @@ export function AssistantChat({ locale, knowledge, serviceName, suggestions }: {
               m.role === "assistant" && !m.content ? (
                 <Bubble key={i} role="assistant"><TypingDots label={ne ? "लेख्दै छ" : "Typing"} /></Bubble>
               ) : (
-                <Bubble key={i} role={m.role}>{m.content}</Bubble>
+                <Bubble key={i} role={m.role}>
+                  {m.content}
+                  {m.link && (
+                    <Link href={m.link.href} onClick={() => setOpen(false)} className="mt-2 flex items-center gap-1 font-semibold text-sky hover:underline">
+                      {m.link.label} <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    </Link>
+                  )}
+                </Bubble>
               ),
             )}
             {neVoice && (

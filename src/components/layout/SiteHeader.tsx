@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { LayoutGrid, Menu, MessageSquarePlus, Search, X } from "lucide-react";
+import { FilePen, ImageUp, LayoutGrid, Search } from "lucide-react";
 import type { Locale } from "@/lib/content/types";
 import { dict } from "@/lib/i18n";
 import { Logo } from "./Logo";
@@ -12,13 +11,13 @@ import { TextSizeButton } from "./TextSizeButton";
 export function SiteHeader({ locale }: { locale: Locale }) {
   const t = dict(locale);
   const pathname = usePathname() ?? `/${locale}`;
-  const [open, setOpen] = useState(false);
-  useEffect(() => setOpen(false), [pathname]);
 
   const other: Locale = locale === "ne" ? "en" : "ne";
   const switchHref = pathname.replace(/^\/(ne|en)(?=\/|$)/, `/${other}`);
   const browse = locale === "ne" ? "सेवाहरू" : "Services";
   const searchLabel = locale === "ne" ? "खोज्नुहोस्" : "Search";
+  const photoLabel = locale === "ne" ? "फोटो साइज" : "Photo size";
+  const lettersLabel = locale === "ne" ? "निवेदन" : "Letters";
   const isActive = (seg: string) => pathname.startsWith(`/${locale}/${seg}`);
   const navCls = (seg: string) => `btn-ghost ${isActive(seg) ? "bg-paper-warm text-ink" : ""}`;
 
@@ -41,41 +40,25 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             <LayoutGrid className="h-5 w-5" aria-hidden="true" />
             {browse}
           </Link>
+          <Link href={`/${locale}/tools/letters`} className={navCls("tools/letters")} aria-current={isActive("tools/letters") ? "page" : undefined}>
+            <FilePen className="h-5 w-5" aria-hidden="true" />
+            {lettersLabel}
+          </Link>
+          <Link href={`/${locale}/tools/photo`} className={navCls("tools/photo")} aria-current={isActive("tools/photo") ? "page" : undefined}>
+            <ImageUp className="h-5 w-5" aria-hidden="true" />
+            {photoLabel}
+          </Link>
           <TextSizeButton locale={locale} />
           <Link href={switchHref} hrefLang={other} lang={other} className="btn-secondary ml-1 min-h-[44px] px-3 text-sm">
             {t.switchLang}
           </Link>
         </nav>
 
-        <div className="flex items-center gap-1 sm:hidden">
-          <Link href={`/${locale}/search`} className="btn-ghost" aria-label={searchLabel}>
-            <Search className="h-6 w-6" aria-hidden="true" />
-          </Link>
-          <button
-            type="button"
-            className="btn-ghost"
-            aria-expanded={open}
-            aria-controls="mobile-menu"
-            aria-label={open ? t.close : locale === "ne" ? "मेनु" : "Menu"}
-            onClick={() => setOpen((v) => !v)}
-          >
-            {open ? <X className="h-6 w-6" aria-hidden="true" /> : <Menu className="h-6 w-6" aria-hidden="true" />}
-          </button>
-        </div>
+        {/* Phones: just the language switch; the bottom tab bar holds the rest. */}
+        <Link href={switchHref} hrefLang={other} lang={other} className="btn-secondary min-h-[40px] px-3 text-sm sm:hidden">
+          {t.switchLang}
+        </Link>
       </div>
-
-      {open && (
-        <nav id="mobile-menu" className="animate-pop origin-top border-t border-paper-line bg-white sm:hidden" aria-label={locale === "ne" ? "मोबाइल मेनु" : "Mobile menu"}>
-          <ul className="container-page flex flex-col divide-y divide-paper-line py-1">
-            <li><Link className="flex min-h-[52px] items-center gap-3 text-[1.05rem] font-medium" href={`/${locale}/guides`}><LayoutGrid className="h-5 w-5 text-ink-faint" aria-hidden="true" />{browse}</Link></li>
-            <li><Link className="flex min-h-[52px] items-center gap-3 text-[1.05rem] font-medium" href={`/${locale}/request`}><MessageSquarePlus className="h-5 w-5 text-ink-faint" aria-hidden="true" />{t.requestGuide}</Link></li>
-            <li className="flex items-center justify-between py-3">
-              <TextSizeButton locale={locale} className="-ml-3" />
-              <Link href={switchHref} hrefLang={other} lang={other} className="btn-secondary min-h-[44px] text-sm">{t.switchLang}</Link>
-            </li>
-          </ul>
-        </nav>
-      )}
     </header>
   );
 }

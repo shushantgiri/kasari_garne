@@ -12,6 +12,7 @@ import type { Metadata, Viewport } from "next";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { MobileTabBar } from "@/components/layout/MobileTabBar";
 import { PwaRegister } from "@/components/layout/PwaRegister";
 import { dict, isLocale } from "@/lib/i18n";
 import { LOCALES } from "@/lib/content/types";
@@ -33,7 +34,8 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     manifest: "/manifest.webmanifest",
     icons: { icon: "/icon.svg", apple: "/icon-192.png" },
     alternates: { languages: { ne: "/ne", en: "/en" } },
-    openGraph: { siteName: "Kasari Garne", locale: locale === "ne" ? "ne_NP" : "en_US", type: "website" },
+    openGraph: { siteName: "Kasari Garne", locale: locale === "ne" ? "ne_NP" : "en_US", type: "website", title: `${t.siteName} — ${t.tagline}`, description: t.heroText },
+    twitter: { card: "summary_large_image" },
   };
 }
 
@@ -50,13 +52,15 @@ export default async function SiteLayout({ children, params }: { children: React
       <head>
         <script dangerouslySetInnerHTML={{ __html: textSizeScript }} />
       </head>
-      <body className="flex min-h-screen flex-col" suppressHydrationWarning>
+      {/* On phones the bottom tab bar covers the last 4rem (plus the home-bar inset), so leave room for it. */}
+      <body className="flex min-h-screen flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] sm:pb-0" suppressHydrationWarning>
         <PwaRegister offlineText={dict(locale).offline} />
         <SiteHeader locale={locale} />
         <main id="main" className="flex-1">
           {children}
         </main>
         <SiteFooter locale={locale} />
+        <MobileTabBar locale={locale} />
       </body>
     </html>
   );
