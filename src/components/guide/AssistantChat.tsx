@@ -173,7 +173,7 @@ export function AssistantChat({ locale, knowledge, library, serviceName, suggest
       }
       if (topic.current) {
         k = topic.current.knowledge[lang];
-        link = { href: `/${locale}/guide/${topic.current.slug}`, label: ne ? "पूरा गाइड हेर्नुहोस्" : "Open the full guide" };
+        link = { href: `/${locale}/guide/${topic.current.slug}`, label: ne ? "पूरा निर्देशिका हेर्नुहोस्" : "Open the full guide" };
       }
     }
     let reply: string;
@@ -314,13 +314,14 @@ export function AssistantChat({ locale, knowledge, library, serviceName, suggest
           onPointerCancel={onPointerCancel}
           style={placed}
           title={ne ? "थिचेर सार्न सकिन्छ" : "Drag to move"}
-          className={`no-print fixed bottom-[calc(9rem+env(safe-area-inset-bottom))] right-4 z-30 inline-flex h-14 touch-none select-none items-center gap-2 rounded-full bg-brand px-4 text-white transition-[transform,box-shadow] duration-150 hover:bg-brand-dark sm:bottom-6 sm:right-6 sm:px-5 ${
-            drag ? "scale-105 cursor-grabbing shadow-[0_14px_32px_rgba(27,34,48,.3)]" : "cursor-grab shadow-pop active:scale-95"
+          className={`no-print fixed bottom-[calc(9rem+env(safe-area-inset-bottom))] right-4 z-30 inline-flex h-12 w-12 touch-none select-none items-center justify-center gap-2 rounded-full bg-brand text-white transition-[transform,box-shadow] duration-150 hover:bg-brand-dark sm:bottom-6 sm:right-6 sm:h-14 sm:w-auto sm:px-5 ${
+            drag ? "scale-105 cursor-grabbing shadow-[0_14px_32px_rgba(27,34,48,.3)]" : "cursor-grab shadow-pop active:scale-90"
           }`}
           aria-haspopup="dialog"
         >
           <MessageCircle className="h-6 w-6" aria-hidden="true" />
-          <span className="font-semibold">{ne ? "सोध्नुहोस्" : "Ask"}</span>
+          {/* Phones: a small round icon; wider screens also show the word. */}
+          <span className="sr-only font-semibold sm:not-sr-only">{ne ? "सोध्नुहोस्" : "Ask"}</span>
         </button>
       )}
 
@@ -329,7 +330,7 @@ export function AssistantChat({ locale, knowledge, library, serviceName, suggest
           role="dialog"
           aria-modal="true"
           aria-label={ne ? "सहयोगीसँग कुरा गर्नुहोस्" : "Chat with the helper"}
-          className="fixed inset-0 z-50 flex animate-pop flex-col bg-white sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[min(640px,calc(100vh-3rem))] sm:w-[400px] sm:overflow-hidden sm:rounded-2xl sm:border sm:border-paper-line sm:shadow-pop"
+          className="fixed inset-0 z-50 flex animate-sheet-up flex-col bg-white sm:animate-pop sm:inset-auto sm:bottom-6 sm:right-6 sm:h-[min(640px,calc(100vh-3rem))] sm:w-[400px] sm:overflow-hidden sm:rounded-2xl sm:border sm:border-paper-line sm:shadow-pop"
         >
           <div className="flex items-center gap-3 border-b border-paper-line bg-paper-warm px-4 py-3">
             <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-brand text-sm font-bold text-white" aria-hidden="true">?</span>
@@ -462,7 +463,7 @@ export function AssistantChat({ locale, knowledge, library, serviceName, suggest
               </button>
             </div>
             <p className="mt-2 text-center text-xs text-ink-faint">
-              {ne ? "जवाफ यही गाइडबाट आउँछ। केही पनि सुरक्षित गरिँदैन।" : "Answers come from this guide. Nothing is saved."}
+              {ne ? "जवाफ यही निर्देशिकाबाट आउँछ। केही पनि सुरक्षित गरिँदैन।" : "Answers come from this guide. Nothing is saved."}
             </p>
           </form>
         </div>

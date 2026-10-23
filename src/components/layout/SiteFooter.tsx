@@ -9,7 +9,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
   const ne = locale === "ne";
   const groups = [
     {
-      title: ne ? "गाइड" : "Guides",
+      title: ne ? "निर्देशिका" : "Guides",
       links: [
         { href: `/${locale}/guides`, label: t.allGuides },
         { href: `/${locale}/request`, label: t.requestGuide },

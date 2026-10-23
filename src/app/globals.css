@@ -138,6 +138,13 @@ dialog.is-closing::backdrop { animation: backdrop-out .16s ease-in both; }
 }
 @keyframes section-rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 
+/* Scroll areas: chip rows scroll without a visible bar; long lists get a thin, quiet one. */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.thin-scrollbar { scrollbar-width: thin; scrollbar-color: #D9D4CB transparent; }
+.thin-scrollbar::-webkit-scrollbar { width: 6px; }
+.thin-scrollbar::-webkit-scrollbar-thumb { background: #D9D4CB; border-radius: 999px; }
+
 /* ---------- Hero backgrounds: a soft colour mesh with fine film grain ---------- */
 .mesh-bg {
   background-color: #FBFAF8;

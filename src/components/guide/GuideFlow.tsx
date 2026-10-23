@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, ChevronDown, ExternalLink, FileText, ImageUp, PlayCircle } from "lucide-react";
+import { Check, ChevronDown, ExternalLink, FileText, PlayCircle } from "lucide-react";
 import type { Locale } from "@/lib/content/types";
 import { appliesTo } from "@/lib/content/situations";
 import { PrepChecklist } from "./PrepChecklist";
+import { PhotoToolSheet } from "@/components/tools/PhotoToolSheet";
 import { StepGuide, type StepView } from "./StepGuide";
 import { StageTitle } from "./StageTitle";
 import { TutorialPlayer } from "@/components/video/TutorialPlayer";
@@ -172,7 +173,7 @@ export function GuideFlow({ locale, slug, serviceName, situations, gap, document
               {later.length > 0 && (
                 <details className="group mt-2" open={later.some((s) => s.id === choice)}>
                   <summary className="inline-flex min-h-[44px] cursor-pointer list-none items-center gap-1.5 text-sm font-semibold text-ink-soft hover:text-ink [&::-webkit-details-marker]:hidden">
-                    {ne ? `अरू ${digits(later.length, locale)} काम · गाइड छिट्टै आउँदैछ` : `${later.length} more · guides coming soon`}
+                    {ne ? `अरू ${digits(later.length, locale)} काम · निर्देशिका छिट्टै आउँदैछ` : `${later.length} more · guides coming soon`}
                     <ChevronDown className="h-4 w-4 transition-transform duration-200 group-open:rotate-180" aria-hidden="true" />
                   </summary>
                   <div className="mt-1 grid gap-2 sm:grid-cols-2">{later.map(option)}</div>
@@ -209,10 +210,10 @@ export function GuideFlow({ locale, slug, serviceName, situations, gap, document
       {/* A purpose we can't verify yet: say so plainly, and point to places that can help. */}
       {pending && chosen && (
         <section id="not-ready" className="scroll-mt-24" aria-labelledby="not-ready-title">
-          <StageTitle id="not-ready-title">{ne ? "यो गाइड अझै तयार छैन" : "This guide isn't ready yet"}</StageTitle>
+          <StageTitle id="not-ready-title">{ne ? "यो निर्देशिका अझै तयार छैन" : "This guide isn't ready yet"}</StageTitle>
           <p className="mt-2 max-w-2xl text-ink-soft">
             {ne
-              ? `“${chosen.label}” का चरण हामीले आधिकारिक पृष्ठमा अझै पुष्टि गरेका छैनौँ, त्यसैले यसको भिडियो वा लिखित गाइड अझै छैन।`
+              ? `“${chosen.label}” का चरण हामीले आधिकारिक पृष्ठमा अझै पुष्टि गरेका छैनौँ, त्यसैले यसको भिडियो वा लिखित निर्देशिका अझै छैन।`
               : `We haven't confirmed the steps for “${chosen.label}” on an official page yet, so there's no video or written guide for it yet.`}
           </p>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -227,7 +228,7 @@ export function GuideFlow({ locale, slug, serviceName, situations, gap, document
               </a>
             )}
             <Link href={`/${locale}/request?service=${encodeURIComponent(`${serviceName}: ${chosen.label}`)}`} className="btn-secondary w-full sm:w-auto">
-              {ne ? "यो गाइड माग्नुहोस्" : "Request this guide"}
+              {ne ? "यो निर्देशिका माग्नुहोस्" : "Request this guide"}
             </Link>
           </div>
           {chosen.id === "status" && help?.statusCheck && <p className="mt-3 text-sm text-ink-faint">{help.statusCheck.label}</p>}
@@ -317,15 +318,8 @@ export function GuideFlow({ locale, slug, serviceName, situations, gap, document
                 items={docs.map((d) => ({ text: d.text, when: choice && d.for?.length ? undefined : d.when, note: d.note }))}
               />
             )}
-            {/* Most forms want photos and scans at a set size; point to the tool that does it. */}
-            <Link href={`/${locale}/tools/photo`} className="no-print mt-4 flex min-h-[52px] items-center gap-3 rounded-2xl bg-sky-tint/70 px-4 py-3 text-sm transition-colors hover:bg-sky-tint">
-              <ImageUp className="h-5 w-5 shrink-0 text-sky" aria-hidden="true" />
-              <span className="min-w-0 flex-1 text-ink-soft">
-                <strong className="font-semibold text-ink">{ne ? "फोटो वा स्क्यानको साइज मिलाउनु छ?" : "Need a photo or scan at the right size?"}</strong>{" "}
-                {ne ? "फोटो साइज टुल प्रयोग गर्नुहोस्।" : "Use the photo size tool."}
-              </span>
-              <ArrowRight className="h-4 w-4 shrink-0 text-sky" aria-hidden="true" />
-            </Link>
+            {/* Most forms want photos and scans at a set size; the tool opens right here. */}
+            <PhotoToolSheet locale={locale} />
           </div>
         </section>
       )}

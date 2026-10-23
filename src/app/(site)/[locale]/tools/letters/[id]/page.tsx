@@ -28,7 +28,7 @@ export default async function LetterPage({ params }: { params: Promise<{ locale:
       <div className="no-print">
         <Link href={`/${locale}/tools/letters`} className="muted inline-flex min-h-[44px] items-center gap-1.5 transition-colors hover:text-ink">
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          {ne ? "सबै निवेदन" : "All letters"}
+          {ne ? "सबै निवेदन" : "All applications"}
         </Link>
         <h1 className="mt-1 text-[1.75rem] font-bold leading-tight tracking-[-0.01em] sm:text-[2.2rem]">{tr(letter.title, locale)}</h1>
         <p className="mt-1 text-ink-soft">{tr(letter.use, locale)}</p>

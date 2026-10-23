@@ -125,7 +125,7 @@ export function answer(k: Knowledge, question: string, purpose?: string): Reply 
   const dependsOnPurpose = !topic || topic === "docs" || topic === "steps" || topic === "time" || topic === "after";
   if (chosen?.pending && (asked.id === chosen.id || dependsOnPurpose) && topic !== "greet" && topic !== "thanks") {
     return out(
-      ne ? `"${chosen.label}" को गाइड अझै तयार हुँदैछ। यसका चरण र कागजात हामीले अहिलेसम्म पुष्टि गरेका छैनौँ।` : `The guide for "${chosen.label}" is still being prepared. We haven't confirmed its steps or documents yet.`,
+      ne ? `"${chosen.label}" को निर्देशिका अझै तयार हुँदैछ। यसका चरण र कागजात हामीले अहिलेसम्म पुष्टि गरेका छैनौँ।` : `The guide for "${chosen.label}" is still being prepared. We haven't confirmed its steps or documents yet.`,
       site && (ne ? `अहिलेलाई ${k.portal} हेर्नुहोस् वा कार्यालयमा सोध्नुहोस्।` : `For now, please check ${k.portal} or ask at the office.`),
     );
   }
@@ -177,7 +177,7 @@ export function answer(k: Knowledge, question: string, purpose?: string): Reply 
       return out(
         `${ne ? "चरणहरू" : "The steps"} ${forLine}:`.replace(" :", ":"),
         steps.map((s, i) => `${num(i + 1)}. ${s.title}: ${(chosen && s.bodyFor?.[chosen.id]) || s.body}`).join("\n"),
-        ne ? "भिडियो गाइडमा यी चरण हेर्न सकिन्छ।" : "You can watch these steps in the video guide.",
+        ne ? "भिडियो निर्देशिकामा यी चरण हेर्न सकिन्छ।" : "You can watch these steps in the video guide.",
       );
     }
   }

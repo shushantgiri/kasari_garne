@@ -17,7 +17,7 @@ export default async function RequestPage({ params, searchParams }: { params: Pr
   return (
     <div className="container-page max-w-2xl py-8 sm:py-10">
       <h1 className="page-title">{correction ? t.report : t.requestTitle}</h1>
-      <p className="mb-6 mt-2 text-ink-soft">{correction ? (locale === "ne" ? "कुन गाइडमा के गलत छ, लेख्नुहोस्।" : "Tell us which guide is wrong and what changed.") : t.requestText}</p>
+      <p className="mb-6 mt-2 text-ink-soft">{correction ? (locale === "ne" ? "कुन निर्देशिकामा के गलत छ, लेख्नुहोस्।" : "Tell us which guide is wrong and what changed.") : t.requestText}</p>
       <RequestForm locale={locale} service={service.slice(0, 200)} mode={correction ? "correction" : "request"} />
     </div>
   );

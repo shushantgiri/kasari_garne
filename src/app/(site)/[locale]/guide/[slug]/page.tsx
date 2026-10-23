@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AlertTriangle, ArrowLeft, ArrowRight, Check, ChevronDown, CircleHelp, ExternalLink, MapPin, ReceiptText, ShieldCheck } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRight, Check, ChevronDown, CircleHelp, ExternalLink, GraduationCap, ReceiptText, ShieldCheck } from "lucide-react";
 import { getDepartments, getGuide, getGuides } from "@/lib/content/repo";
 import { LOCALES, type Department, type Fact, type Guide, type Locale, type ProcessMode } from "@/lib/content/types";
 import { dict, digits, formatDate, isLocale, tr } from "@/lib/i18n";
@@ -19,6 +19,7 @@ import { FeedbackWidget } from "@/components/guide/FeedbackWidget";
 import { ReportDialog } from "@/components/guide/ReportDialog";
 import { InfoDialog } from "@/components/guide/InfoDialog";
 import { ShareGuide } from "@/components/guide/ShareGuide";
+import { OfficeFinder } from "@/components/guide/OfficeFinder";
 
 export const revalidate = 300;
 
@@ -57,13 +58,6 @@ const MODE: Record<ProcessMode, { ne: string; en: string; cls: string }> = {
   partly_online: { ne: "केही अनलाइन · कार्यालय पनि जानुपर्छ", en: "Partly online · office visit needed", cls: "bg-sky-tint text-sky" },
   in_person: { ne: "कार्यालयमै जानुपर्छ", en: "In person only", cls: "bg-paper-warm text-ink" },
   awaiting_verification: { ne: "प्रक्रिया पुष्टि हुन बाँकी", en: "Process awaiting verification", cls: "bg-warn-tint text-warn" },
-};
-
-/** What to search for on a map to find a department's local offices; otherwise its English name is used. */
-const OFFICE_SEARCH: Record<string, string> = {
-  dotm: "Transport Management Office",
-  dop: "Department of Passports",
-  donidcr: "National ID registration office",
 };
 
 const official = <T extends { check: Fact["check"] }>(xs: T[]) => xs.filter((x) => x.check === "official");
@@ -249,6 +243,16 @@ export default async function GuidePage({ params }: { params: Promise<{ locale: 
                   </InfoDialog>
                 )}
                 <ShareGuide locale={locale} title={tr(guide.question, locale)} />
+                {/* Driving licence only: practice for the written test and the colour check. */}
+                {guide.slug === "driving-licence" && (
+                  <Link
+                    href={`/${locale}/guide/${guide.slug}/practice`}
+                    className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white shadow-card transition-[background-color,transform] duration-150 hover:bg-ink/90 active:scale-[.98]"
+                  >
+                    <GraduationCap className="h-4 w-4" aria-hidden="true" />
+                    {ne ? "परीक्षा अभ्यास" : "Test practice"}
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -314,33 +318,11 @@ export default async function GuidePage({ params }: { params: Promise<{ locale: 
                     {t.openOfficial} <ExternalLink className="h-4 w-4" aria-hidden="true" />
                   </a>
                 </div>
-                <p className="mt-2 px-1 text-sm text-ink-faint">{ne ? "आवेदन त्यहीँ दिनुहोस्। हामी मार्गदर्शन मात्र दिन्छौँ।" : "You apply there. We only guide you."}</p>
               </div>
             )}
 
-            {/* Office visit needed: find the nearest office on a map (Google Maps search near the person). */}
-            {guide.mode !== "online" && dept && (
-              <div className="flex flex-col gap-3 rounded-2xl border border-paper-line p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
-                <div className="flex min-w-0 items-center gap-3">
-                  <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-sky-tint text-sky">
-                    <MapPin className="h-5 w-5" aria-hidden="true" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="font-semibold leading-snug text-ink">{ne ? "नजिकको कार्यालय" : "Nearest office"}</p>
-                    <p className="text-sm text-ink-faint">{ne ? "नक्साले तपाईं नजिकका कार्यालय देखाउँछ (Google Maps)।" : "The map shows offices near you (Google Maps)."}</p>
-                  </div>
-                </div>
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${OFFICE_SEARCH[dept.id] ?? tr(dept.name, "en")} near me`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-secondary w-full shrink-0 sm:w-auto"
-                >
-                  <MapPin className="h-4 w-4 text-sky" aria-hidden="true" />
-                  {ne ? "नक्सामा हेर्नुहोस्" : "Open map"}
-                </a>
-              </div>
-            )}
+            {/* Office visit needed: the exact office in the person's district, with directions. */}
+            {guide.mode !== "online" && dept && <OfficeFinder locale={locale} kind={dept.id === "dotm" ? "transport" : "dao"} />}
 
             <div>
               <h3 className="text-sm font-semibold text-ink-faint">{ne ? "पेस गर्नुअघि जाँच्नुहोस्" : "Before you submit"}</h3>
@@ -502,7 +484,7 @@ function ComingSoon({ guide, locale, dept }: { guide: Guide; locale: Locale; dep
 
       <div className="container-page guide-body mt-5 sm:mt-6">
         <section aria-labelledby="soon-title">
-          <StageTitle id="soon-title">{ne ? "यो गाइड तयार हुँदैछ" : "This guide is being prepared"}</StageTitle>
+          <StageTitle id="soon-title">{ne ? "यो निर्देशिका तयार हुँदैछ" : "This guide is being prepared"}</StageTitle>
           <p className="mt-3 text-ink-soft">
             {ne
               ? "आधिकारिक स्रोतबाट जाँच नगरी हामी प्रक्रिया प्रकाशित गर्दैनौँ। माग गर्नुभयो भने हामी यसलाई छिटो तयार गर्छौँ।"

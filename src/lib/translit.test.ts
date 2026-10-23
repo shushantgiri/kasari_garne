@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { convertLastWord, toNepali } from "./translit.ts";
+import { bestNepali, convertLastWord, suggestions, toNepali } from "./translit.ts";
 
 test("everyday names and words", () => {
   assert.equal(toNepali("raam"), "राम");
@@ -40,4 +40,21 @@ test("converts the word before a space, and a full stop becomes ।", () => {
   assert.deepEqual(convertLastWord("chha.", 5), { text: "छ।", caret: 2 });
   assert.equal(convertLastWord("राम", 3), null);
   assert.equal(convertLastWord("राम ", 4), null);
+});
+
+test("suggestions put real words first", () => {
+  assert.equal(bestNepali("ram"), "राम");
+  assert.equal(bestNepali("kasari"), "कसरी");
+  assert.equal(bestNepali("shrestha"), "श्रेष्ठ");
+  assert.equal(bestNepali("gurung"), "गुरुङ");
+  assert.ok(suggestions("ram").includes("रम"), "the plain spelling is still offered");
+  assert.equal(bestNepali("thapa"), "थापा");
+  assert.equal(bestNepali("nagarikata"), "नागरिकता");
+  assert.equal(bestNepali("bahadur"), "बहादुर");
+  assert.equal(bestNepali("butwal"), "बुटवल");
+  assert.equal(bestNepali("chha"), "छ");
+});
+
+test("auto-convert on space uses the best spelling", () => {
+  assert.deepEqual(convertLastWord("ram ", 4), { text: "राम ", caret: 4 });
 });

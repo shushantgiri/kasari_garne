@@ -17,7 +17,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
   const browse = locale === "ne" ? "सेवाहरू" : "Services";
   const searchLabel = locale === "ne" ? "खोज्नुहोस्" : "Search";
   const photoLabel = locale === "ne" ? "फोटो साइज" : "Photo size";
-  const lettersLabel = locale === "ne" ? "निवेदन" : "Letters";
+  const lettersLabel = locale === "ne" ? "निवेदन" : "Application";
   const isActive = (seg: string) => pathname.startsWith(`/${locale}/${seg}`);
   const navCls = (seg: string) => `btn-ghost ${isActive(seg) ? "bg-paper-warm text-ink" : ""}`;
 

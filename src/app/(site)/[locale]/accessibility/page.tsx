@@ -15,7 +15,7 @@ export default async function AccessibilityPage({ params }: { params: Promise<{ 
         "किबोर्डको Tab ले सबै बटन र लिंकमा पुगिन्छ। “मुख्य भागमा जानुहोस्” लिंक पहिलो Tab मा देखिन्छ।",
         "स्क्रिन रिडरका लागि सबै बटनमा नाम छ, र भिडियो चल्दा उपशीर्षक पढिन्छ।",
         "तपाईंको फोनमा “कम चाल” (reduced motion) सेटिङ छ भने एनिमेसन घट्छ।",
-        "कम डाटा: एनिमेटेड गाइड केही KB मात्र हुन्छ। MP4 भिडियोमा “कम डाटा” विकल्प छ।",
+        "कम डाटा: एनिमेटेड निर्देशिका केही KB मात्र हुन्छ। MP4 भिडियोमा “कम डाटा” विकल्प छ।",
       ]
     : [
         "The “अ+” button in the header makes text larger (two levels). Browser zoom works too.",

@@ -24,7 +24,7 @@ function draft(
     popular: true,
     title,
     question,
-    intro: { ne: "यो गाइड तयार हुँदैछ।", en: "This guide is being prepared." },
+    intro: { ne: "यो निर्देशिका तयार हुँदैछ।", en: "This guide is being prepared." },
     summary,
     category,
     mode: "awaiting_verification",

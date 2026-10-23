@@ -1,14 +1,17 @@
 import type { Localized } from "./types";
 
 /**
- * Ready-to-fill application letters (निवेदन) in the usual Nepali office layout, as office-writing
- * guides describe it: the date top right; "श्रीमान् … ज्यू," with the office and its address;
- * the subject as one short phrase; "महोदय,"; the body in two paragraphs (what happened, then the
- * request, opening with "अतः"); the truthfulness line official forms carry; then "निवेदक".
+ * Ready-to-fill application letters (निवेदन) in the layout government offices' own samples use:
+ * the date top right; "श्रीमान् … ज्यू," with the office and its address; the subject as one
+ * short phrase; "महोदय,"; a body opening "प्रस्तुत विषयमा …" that says who is writing and what
+ * they need, then the request opening "अतः …"; then "निवेदक" with signature, full name, address
+ * and phone, and attached documents listed at the bottom.
+ * The truthfulness line comes from official forms (citizenship, ID, recommendations, petitions);
+ * ordinary letters such as leave don't carry it, so it's optional and only on by default where it fits.
  * These are common general formats, not official forms; where an office has its own form,
  * people should use that (the editor says so). Letters are written in Nepali, as offices expect.
  * `{key}` in the text is replaced with what the person types; empty ones show as dots.
- * `{ko}` is "को" or "की", so verbs agree with the applicant ("आएको छु" / "आएकी छु").
+ * `{ko}` is "को" or "की" and `{child}` "छोरा" or "छोरी", so the words agree with the applicant.
  */
 
 export interface LetterField {
@@ -29,37 +32,48 @@ export interface LetterTemplate {
   subject: string;
   /** Paragraphs are separated by a blank line. */
   body: string;
-  /** Adds the line official forms end with: what's written is true. */
+  /** Whether the truthfulness line is ticked to begin with (people can turn it on or off). */
   declaration?: boolean;
+  /** Asks which documents are attached, listed at the bottom ("संलग्न कागजात"). */
+  attachments?: boolean;
   /** Extra lines in the applicant's block, after the name (e.g. position or class). */
   signer?: string[];
   fields: LetterField[];
 }
 
-/** The line official निवेदन forms carry above the applicant's block. */
-export const DECLARATION = "यसमा लेखिएको व्यहोरा ठिक साँचो हो, झुटा ठहरे कानुनबमोजिम सहुँला बुझाउँला।";
+/** The truthfulness line, worded as on official forms. */
+export const DECLARATION = "यसमा लेखिएको व्यहोरा ठीक साँचो हो, झुट्टा ठहरे कानूनबमोजिम सहुँला बुझाउँला।";
 
 /** Asked in every letter, for the applicant's block. */
 export const SIGNER_FIELDS: LetterField[] = [
-  { key: "name", label: { ne: "तपाईंको नाम", en: "Your name" }, example: "राम बहादुर थापा" },
+  { key: "name", label: { ne: "तपाईंको नाम थर", en: "Your full name" }, example: "राम बहादुर थापा" },
   { key: "address", label: { ne: "तपाईंको ठेगाना", en: "Your address" }, example: "बुटवल-५, रुपन्देही" },
-  { key: "phone", label: { ne: "फोन नम्बर", en: "Phone number" }, example: "९८XXXXXXXX", plain: true },
+  { key: "phone", label: { ne: "सम्पर्क नम्बर", en: "Phone number" }, example: "९८XXXXXXXX", plain: true },
 ];
+
+/** Asked when a letter lists attached documents. */
+export const ATTACHMENTS_FIELD: LetterField = {
+  key: "attachments",
+  label: { ne: "संलग्न कागजात", en: "Documents attached" },
+  example: "नागरिकताको प्रतिलिपि, जग्गाधनी प्रमाणपत्रको प्रतिलिपि",
+};
 
 export const LETTERS: LetterTemplate[] = [
   {
     id: "ward-recommendation",
     title: { ne: "वडा कार्यालयबाट सिफारिस", en: "Recommendation from the ward office" },
     use: { ne: "नागरिकता, राहदानी, बैंक आदिका लागि सिफारिस", en: "For citizenship, passport, bank and more" },
-    to: ["श्रीमान् वडाध्यक्ष ज्यू,", "वडा नं. {ward} को कार्यालय,", "{municipality}, {district}।"],
+    to: ["श्रीमान् वडाध्यक्ष ज्यू,", "{municipality},", "वडा नं. {ward} को कार्यालय, {district}।"],
     subject: "{purpose}का लागि सिफारिस पाऊँ।",
     body:
-      "म निवेदक यस {municipality} वडा नं. {ward} मा स्थायी रूपमा बसोबास गर्दै आए{ko} छु। मलाई {purpose}का लागि यस वडा कार्यालयको सिफारिस आवश्यक परेको छ।\n\nअतः आवश्यक कागजातका प्रतिलिपिसहित यो निवेदन पेस गरे{ko} छु। उक्त विषयमा सिफारिस गरिदिनुहुन विनम्र अनुरोध गर्दछु।",
+      "प्रस्तुत विषयमा {district} जिल्ला, {municipality} वडा नं. {ward} मा स्थायी बसोबास गर्ने {parent}{ko} {child} म {name}लाई {purpose}का लागि सिफारिस आवश्यक परेकाले सम्बन्धित कागजातका प्रतिलिपिसहित यो निवेदन पेस गरे{ko} छु।\n\nअतः उक्त सिफारिस गरिदिनुहुन विनम्र अनुरोध गर्दछु।",
     declaration: true,
+    attachments: true,
     fields: [
       { key: "municipality", label: { ne: "नगरपालिका / गाउँपालिका", en: "Municipality" }, example: "बुटवल उपमहानगरपालिका" },
-      { key: "ward", label: { ne: "वडा नम्बर", en: "Ward number" }, example: "५" },
+      { key: "ward", label: { ne: "वडा नम्बर", en: "Ward number" }, example: "५", plain: true },
       { key: "district", label: { ne: "जिल्ला", en: "District" }, example: "रुपन्देही" },
+      { key: "parent", label: { ne: "बुबा वा आमाको नाम थर", en: "Father's or mother's full name" }, example: "हरि बहादुर थापा" },
       { key: "purpose", label: { ne: "केका लागि?", en: "What for?" }, example: "नागरिकता प्रमाणपत्र" },
     ],
   },
@@ -70,7 +84,7 @@ export const LETTERS: LetterTemplate[] = [
     to: ["श्रीमान् {recipient} ज्यू,", "{organization},", "{orgAddress}।"],
     subject: "बिदा पाऊँ।",
     body:
-      "म {reason}का कारण मिति {from} देखि {until} सम्म जम्मा {days} दिन उपस्थित हुन सक्दिनँ।\n\nअतः उक्त अवधिको बिदा स्वीकृत गरिदिनुहुन विनम्र अनुरोध गर्दछु।",
+      "प्रस्तुत विषयमा म {reason}का कारण मिति {from} देखि {until} सम्म जम्मा {days} दिन उपस्थित हुन नसक्ने भए{ko} छु।\n\nअतः उक्त अवधिको बिदा स्वीकृत गरिदिनुहुन विनम्र अनुरोध गर्दछु।",
     signer: ["पद / कक्षा: {position}"],
     fields: [
       { key: "recipient", label: { ne: "कसलाई? (पद)", en: "To whom? (position)" }, example: "प्रधानाध्यापक" },
@@ -90,7 +104,7 @@ export const LETTERS: LetterTemplate[] = [
     to: ["श्रीमान् प्रहरी प्रमुख ज्यू,", "{policeOffice},", "{district}।"],
     subject: "{document} हराएको सम्बन्धमा।",
     body:
-      "मेरो नाममा जारी भएको {document} (नं. {docNumber}) मिति {lostDate} मा {lostPlace} वरपर हराएको छ। धेरै खोजी गर्दा पनि फेला पार्न सकिएन।\n\nअतः उक्त कागजात हराएको व्यहोरा अभिलेखमा राखी प्रतिलिपि लिनका लागि आवश्यक सिफारिस गरिदिनुहुन विनम्र अनुरोध गर्दछु।",
+      "प्रस्तुत विषयमा मेरो नाममा जारी भएको {document} (नं. {docNumber}) मिति {lostDate} मा {lostPlace} वरपर हराएको छ। धेरै खोजी गर्दा पनि फेला पर्न सकेन।\n\nअतः उक्त कागजात हराएको व्यहोरा अभिलेख गरी सोको प्रमाणित गरिदिनुहुन विनम्र अनुरोध गर्दछु।",
     declaration: true,
     fields: [
       { key: "policeOffice", label: { ne: "प्रहरी कार्यालय", en: "Police office" }, example: "जिल्ला प्रहरी कार्यालय" },
@@ -108,8 +122,9 @@ export const LETTERS: LetterTemplate[] = [
     to: ["श्रीमान् प्रमुख ज्यू,", "{office},", "{officeAddress}।"],
     subject: "{document}मा {field} संशोधन गरिपाऊँ।",
     body:
-      "मेरो {document}मा {field} \"{right}\" हुनुपर्नेमा त्रुटिवश \"{wrong}\" उल्लेख हुन गएको छ। सही विवरण पुष्टि गर्ने कागजातको प्रतिलिपि यसैसाथ संलग्न गरे{ko} छु।\n\nअतः उक्त विवरण संशोधन गरिदिनुहुन विनम्र अनुरोध गर्दछु।",
+      "प्रस्तुत विषयमा मेरो {document}मा {field} \"{right}\" हुनुपर्नेमा त्रुटिवश \"{wrong}\" उल्लेख हुन गएको छ। सही विवरण पुष्टि हुने कागजातको प्रतिलिपि यसैसाथ संलग्न गरे{ko} छु।\n\nअतः उक्त विवरण संशोधन गरिदिनुहुन विनम्र अनुरोध गर्दछु।",
     declaration: true,
+    attachments: true,
     fields: [
       { key: "office", label: { ne: "कार्यालयको नाम", en: "Office" }, example: "जिल्ला प्रशासन कार्यालय" },
       { key: "officeAddress", label: { ne: "कार्यालयको ठेगाना", en: "Office address" }, example: "रुपन्देही" },
@@ -126,8 +141,9 @@ export const LETTERS: LetterTemplate[] = [
     to: ["श्रीमान् प्रमुख ज्यू,", "{office},", "{officeAddress}।"],
     subject: "{document}को प्रतिलिपि पाऊँ।",
     body:
-      "यस कार्यालयबाट मेरो नाममा जारी भएको {document} {reason} भएकाले सोको प्रतिलिपि आवश्यक परेको छ।\n\nअतः नियमानुसार लाग्ने दस्तुर बुझाउने गरी उक्त कागजातको प्रतिलिपि उपलब्ध गराइदिनुहुन विनम्र अनुरोध गर्दछु।",
+      "प्रस्तुत विषयमा यस कार्यालयबाट मेरो नाममा जारी भएको {document} {reason} भएकाले सोको प्रतिलिपि आवश्यक परेको छ।\n\nअतः नियमानुसार लाग्ने दस्तुर बुझाउने गरी उक्त कागजातको प्रतिलिपि उपलब्ध गराइदिनुहुन विनम्र अनुरोध गर्दछु।",
     declaration: true,
+    attachments: true,
     fields: [
       { key: "office", label: { ne: "कार्यालयको नाम", en: "Office" }, example: "जिल्ला प्रशासन कार्यालय" },
       { key: "officeAddress", label: { ne: "कार्यालयको ठेगाना", en: "Office address" }, example: "रुपन्देही" },
@@ -141,7 +157,7 @@ export const LETTERS: LetterTemplate[] = [
     use: { ne: "आफ्नै विषय र कुरा लेख्न", en: "Any request, in your own words" },
     to: ["श्रीमान् {recipient} ज्यू,", "{office},", "{officeAddress}।"],
     subject: "{subjectText}",
-    body: "{message}\n\nअतः उक्त विषयमा आवश्यक व्यवस्था गरिदिनुहुन विनम्र अनुरोध गर्दछु।",
+    body: "प्रस्तुत विषयमा {message}\n\nअतः उक्त विषयमा आवश्यक व्यवस्था गरिदिनुहुन विनम्र अनुरोध गर्दछु।",
     fields: [
       { key: "recipient", label: { ne: "कसलाई? (पद)", en: "To whom? (position)" }, example: "प्रमुख" },
       { key: "office", label: { ne: "कार्यालयको नाम", en: "Office" }, example: "नगरपालिकाको कार्यालय" },
@@ -156,5 +172,8 @@ export const getLetter = (id: string) => LETTERS.find((l) => l.id === id);
 
 /** Puts the person's words into a line of the template; empty ones become dots to fill by hand. */
 export function fillLetter(text: string, values: Record<string, string>): string {
-  return text.replace(/\{(\w+)\}/g, (_, k: string) => (k === "ko" ? (values.ko === "की" ? "की" : "को") : values[k]?.trim() || "............"));
+  const woman = values.ko === "की";
+  return text.replace(/\{(\w+)\}/g, (_, k: string) =>
+    k === "ko" ? (woman ? "की" : "को") : k === "child" ? (woman ? "छोरी" : "छोरा") : values[k]?.trim() || "............",
+  );
 }

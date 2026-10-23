@@ -97,8 +97,8 @@ export default async function GuidesPage({
         </ul>
       ) : (
         <div className="rounded-2xl border border-dashed border-paper-line p-8 text-center">
-          <p className="font-semibold">{ne ? "यस विषयमा गाइड अझै छैन।" : "No guides in this category yet."}</p>
-          <p className="mt-1 text-ink-soft">{ne ? "अर्को विषय हेर्नुहोस्, वा गाइड माग्नुहोस्।" : "Try another category, or request a guide."}</p>
+          <p className="font-semibold">{ne ? "यस विषयमा निर्देशिका अझै छैन।" : "No guides in this category yet."}</p>
+          <p className="mt-1 text-ink-soft">{ne ? "अर्को विषय हेर्नुहोस्, वा निर्देशिका माग्नुहोस्।" : "Try another category, or request a guide."}</p>
           <Link href={`/${locale}/request`} className="btn-primary mt-4">{t.requestGuide}</Link>
         </div>
       )}

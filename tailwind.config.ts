@@ -28,6 +28,8 @@ export default {
         pop: { from: { opacity: "0", transform: "translateY(-4px) scale(.98)" }, to: { opacity: "1", transform: "none" } },
         "step-next": { from: { opacity: "0", transform: "translateX(12px)" }, to: { opacity: "1", transform: "none" } },
         "step-back": { from: { opacity: "0", transform: "translateX(-12px)" }, to: { opacity: "1", transform: "none" } },
+        // Phones: a panel sliding up from the bottom, like an app's sheet.
+        "sheet-up": { from: { opacity: "0", transform: "translateY(40%)" }, to: { opacity: "1", transform: "none" } },
         "word-in": { from: { opacity: "0", transform: "translateY(.45em)", filter: "blur(6px)" }, to: { opacity: "1", transform: "none", filter: "none" } },
         "dialog-in": { from: { opacity: "0", transform: "translateY(16px) scale(.96)" }, to: { opacity: "1", transform: "none" } },
         "dialog-out": { from: { opacity: "1", transform: "none" }, to: { opacity: "0", transform: "translateY(10px) scale(.98)" } },
@@ -39,6 +41,7 @@ export default {
         pop: "pop .16s cubic-bezier(.2,.8,.2,1) both",
         "step-next": "step-next .24s cubic-bezier(.2,.8,.2,1) both",
         "step-back": "step-back .24s cubic-bezier(.2,.8,.2,1) both",
+        "sheet-up": "sheet-up .32s cubic-bezier(.2,.8,.2,1) both",
         "word-in": "word-in .5s cubic-bezier(.2,.8,.2,1) both",
         "dialog-in": "dialog-in .26s cubic-bezier(.2,.8,.2,1) both",
         "dialog-out": "dialog-out .16s ease-in both",

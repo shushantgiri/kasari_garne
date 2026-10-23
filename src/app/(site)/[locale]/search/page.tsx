@@ -98,10 +98,10 @@ function BestMatch({ g, q, locale }: { g: GuideTeaser; q: string; locale: Locale
           <p className="text-lg font-bold leading-snug">{tr(g.title, locale)}</p>
           <p className="mt-0.5 text-ink-soft">{purpose ? tr(purpose.label, locale) : tr(g.question, locale)}</p>
           {g.published && purpose && purpose.pending && (
-            <p className="mt-2 text-sm text-warn">{ne ? "यो कामको गाइड छिट्टै आउँदैछ। अहिलेलाई आधिकारिक वेबसाइट र अनुरोध गर्ने तरिका देखाउँछौँ।" : "This guide is coming soon. We'll show you the official website and how to request it."}</p>
+            <p className="mt-2 text-sm text-warn">{ne ? "यो कामको निर्देशिका छिट्टै आउँदैछ। अहिलेलाई आधिकारिक वेबसाइट र अनुरोध गर्ने तरिका देखाउँछौँ।" : "This guide is coming soon. We'll show you the official website and how to request it."}</p>
           )}
           {p.asked && !p.id && g.published && (
-            <p className="mt-2 text-sm text-warn">{ne ? "यो कामको छुट्टै गाइड अझै छैन। सामान्य गाइड हेर्नुहोस्।" : "There's no separate guide for that yet. See the general guide."}</p>
+            <p className="mt-2 text-sm text-warn">{ne ? "यो कामको छुट्टै निर्देशिका अझै छैन। सामान्य निर्देशिका हेर्नुहोस्।" : "There's no separate guide for that yet. See the general guide."}</p>
           )}
         </div>
       </div>

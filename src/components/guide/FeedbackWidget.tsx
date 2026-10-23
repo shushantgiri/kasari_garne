@@ -33,12 +33,12 @@ export function FeedbackWidget({ locale, guide }: { locale: Locale; guide: strin
   };
 
   if (stage === "done") {
-    return <p role="status" className="font-semibold text-ok">{ne ? "धन्यवाद! तपाईंको प्रतिक्रियाले गाइड सुधार्न मद्दत गर्छ।" : "Thank you! Your feedback helps us improve this guide."}</p>;
+    return <p role="status" className="font-semibold text-ok">{ne ? "धन्यवाद! तपाईंको प्रतिक्रियाले निर्देशिका सुधार्न मद्दत गर्छ।" : "Thank you! Your feedback helps us improve this guide."}</p>;
   }
 
   return (
     <div>
-      <h2 className="text-lg font-bold">{ne ? "यो गाइड उपयोगी भयो?" : "Was this guide useful?"}</h2>
+      <h2 className="text-lg font-bold">{ne ? "यो निर्देशिका उपयोगी भयो?" : "Was this guide useful?"}</h2>
       {stage === "ask" && (
         <div className="mt-3 flex gap-2">
           <button type="button" disabled={busy} onClick={() => send(true)} className="btn-secondary flex-1 sm:flex-none">

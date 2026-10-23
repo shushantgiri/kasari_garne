@@ -4,8 +4,8 @@ const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-Frame-Options", value: "DENY" },
-  // Microphone only for this site, for voice search; nothing else may use it.
-  { key: "Permissions-Policy", value: "camera=(), microphone=(self), geolocation=()" },
+  // Microphone (voice search) and location (finding your office) only for this site; nothing else may use them.
+  { key: "Permissions-Policy", value: "camera=(), microphone=(self), geolocation=(self)" },
 ];
 
 const config: NextConfig = {

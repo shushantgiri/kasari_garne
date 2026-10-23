@@ -9,7 +9,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   return {
-    title: locale === "ne" ? "निवेदनका ढाँचा" : "Application letter templates",
+    title: locale === "ne" ? "निवेदनका ढाँचा" : "Application templates",
     description:
       locale === "ne"
         ? "सरकारी कार्यालयमा चल्ने ढाँचामा निवेदन फोनमै भर्नुहोस्, अनि कपी, शेयर वा प्रिन्ट गर्नुहोस्।"
@@ -36,7 +36,7 @@ export default async function LettersPage({ params }: { params: Promise<{ locale
       <section className="mesh-bg grain overflow-hidden border-b border-paper-line">
         <div className="container-page py-10 text-center sm:py-12">
           <h1 className="animate-rise text-[2rem] font-bold leading-[1.15] tracking-[-0.02em] sm:text-[2.6rem]">
-            {ne ? "निवेदन लेख्न" : "Application letters,"}{" "}
+            {ne ? "निवेदन लेख्न" : "Applications,"}{" "}
             <span className="block bg-gradient-to-r from-[#D63A44] to-brand-dark bg-clip-text py-[0.12em] text-transparent">{ne ? "अब सजिलो" : "made easy"}</span>
           </h1>
           <p className="mx-auto mt-3 max-w-md animate-rise text-balance text-ink-soft [animation-delay:60ms] sm:text-lg">
