@@ -75,7 +75,7 @@ export function BsCalendar({ locale }: { locale: Locale }) {
 
   return (
     <div>
-      <div className="overflow-hidden rounded-3xl border border-paper-line bg-white">
+      <div className="overflow-hidden rounded-3xl bg-white shadow-[0_1px_2px_rgba(27,34,48,.04),0_10px_30px_-20px_rgba(27,34,48,.3)] ring-1 ring-paper-line">
         {/* Month and arrows. */}
         <div className="flex items-center justify-between gap-2 border-b border-paper-line px-2 py-2">
           <button type="button" onClick={() => go(-1)} aria-label={ne ? "अघिल्लो महिना" : "Previous month"} className="grid h-11 w-11 place-items-center rounded-full text-ink-soft transition-colors hover:bg-paper-warm hover:text-ink">
@@ -115,7 +115,7 @@ export function BsCalendar({ locale }: { locale: Locale }) {
                 aria-pressed={sel}
                 aria-label={`${ne ? BS_MONTHS_NE[view.month - 1] : BS_MONTHS_EN[view.month - 1]} ${n(c.day)}${hs.length ? ` — ${hs.map((h) => h.name).join(", ")}` : ""}`}
                 className={`relative flex aspect-square flex-col items-center justify-center rounded-xl transition-[background-color,transform,box-shadow] duration-150 active:scale-95 ${
-                  sel ? "bg-ink text-white shadow-pop" : isToday(c.day) ? "bg-sky-tint ring-2 ring-sky/40" : off ? "bg-brand-tint/60 hover:bg-brand-tint" : "hover:bg-paper-warm"
+                  sel ? "bg-ink text-white shadow-pop" : isToday(c.day) ? "bg-ok-tint ring-2 ring-ok/40" : off ? "bg-brand-tint/60 hover:bg-brand-tint" : "hover:bg-paper-warm"
                 }`}
               >
                 <span className={`text-base font-bold leading-none sm:text-lg ${sel ? "" : off ? "text-brand" : "text-ink"}`}>{n(c.day)}</span>

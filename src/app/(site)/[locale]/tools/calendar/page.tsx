@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isLocale } from "@/lib/i18n";
 import { ToolHero } from "@/components/tools/ToolHero";
+import { ToolMore } from "@/components/tools/ToolGrid";
 import { CalendarTool } from "@/components/tools/CalendarTool";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -20,12 +21,16 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   return (
     <>
       <ToolHero
+        locale={locale}
+        tool="/tools/calendar"
+        width="max-w-xl"
         first={ne ? "मिति र बिदा," : "Dates and holidays,"}
         second={ne ? "एकै ठाउँमा" : "in one place"}
         text={ne ? "आज कार्यालय खुला छ कि छैन, बिदाको पात्रो, र मिति बदल्ने।" : "Are offices open today, the holiday calendar, and a date converter."}
       />
       <div className="container-page max-w-xl py-6 sm:py-10">
         <CalendarTool locale={locale} />
+        <ToolMore locale={locale} current="/tools/calendar" />
       </div>
     </>
   );

@@ -170,7 +170,7 @@ export function DocToPdf({ locale }: { locale: Locale }) {
       {/* Add pages. */}
       {pages.length === 0 ? (
         <div className="animate-rise rounded-3xl border-2 border-dashed border-paper-line bg-white p-6 text-center sm:p-10">
-          <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-sky-tint text-sky">
+          <span className="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-[#E2EEEC] text-[#2A6863]">
             <FileText className="h-8 w-8" aria-hidden="true" />
           </span>
           <p className="mt-4 text-lg font-bold text-ink">{ne ? "कागजातको फोटो थप्नुहोस्" : "Add photos of your documents"}</p>
@@ -187,7 +187,7 @@ export function DocToPdf({ locale }: { locale: Locale }) {
           </div>
         </div>
       ) : (
-        <div className="rounded-3xl border border-paper-line bg-white p-3 sm:p-4">
+        <div className="rounded-3xl bg-white shadow-[0_1px_2px_rgba(27,34,48,.04),0_10px_30px_-20px_rgba(27,34,48,.3)] ring-1 ring-paper-line p-3 sm:p-4">
           <div className="flex items-center justify-between gap-2 px-1">
             <p className="font-semibold text-ink">{ne ? `${n(pages.length)} पाना` : `${pages.length} page${pages.length > 1 ? "s" : ""}`}</p>
             <div className="flex gap-1.5">
@@ -244,7 +244,7 @@ export function DocToPdf({ locale }: { locale: Locale }) {
       )}
 
       {pages.length > 0 && (
-        <div className="animate-rise space-y-4 rounded-3xl border border-paper-line bg-white p-4 sm:p-5">
+        <div className="animate-rise space-y-4 rounded-3xl bg-white shadow-[0_1px_2px_rgba(27,34,48,.04),0_10px_30px_-20px_rgba(27,34,48,.3)] ring-1 ring-paper-line p-4 sm:p-5">
           {/* Size limit. */}
           <div>
             <p className="text-sm font-semibold text-ink-faint">{ne ? "फारमले भनेको बढीमा साइज" : "Largest size the form allows"}</p>
@@ -264,7 +264,7 @@ export function DocToPdf({ locale }: { locale: Locale }) {
           </div>
           {/* Scan look. */}
           <label className="flex cursor-pointer items-center gap-3 rounded-2xl bg-paper-warm px-3.5 py-3">
-            <Wand2 className="h-5 w-5 shrink-0 text-sky" aria-hidden="true" />
+            <Wand2 className="h-5 w-5 shrink-0 text-[#2A6863]" aria-hidden="true" />
             <span className="min-w-0 flex-1">
               <span className="block font-semibold text-ink">{ne ? "स्क्यान जस्तो (कालो-सेतो)" : "Scan look (black and white)"}</span>
               <span className="block text-sm text-ink-faint">{ne ? "अक्षर प्रस्ट, साइज सानो" : "Sharper text, smaller file"}</span>
@@ -279,7 +279,7 @@ export function DocToPdf({ locale }: { locale: Locale }) {
                 {ne ? "PDF बनाउँदै…" : "Making the PDF…"}
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-paper-warm">
-                <div className="h-full rounded-full bg-gradient-to-r from-sky to-brand transition-[width] duration-300" style={{ width: `${busy}%` }} />
+                <div className="h-full rounded-full bg-ink transition-[width] duration-300" style={{ width: `${busy}%` }} />
               </div>
             </div>
           ) : (

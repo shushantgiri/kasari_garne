@@ -55,26 +55,27 @@ function compute(ne: boolean): Today {
   };
 }
 
+/** Flat, calm tints: the card, its edge, and the accent for the ring and the live dot. */
 const TONES = {
-  ok: "from-[#2FA36A] via-[#1E7A4C] to-[#155C39] shadow-[0_18px_40px_-20px_rgba(30,122,76,.8)]",
-  warn: "from-[#E3A43A] via-[#C27C12] to-[#8A5A00] shadow-[0_18px_40px_-20px_rgba(138,90,0,.8)]",
-  brand: "from-[#E04B54] via-[#B4232C] to-[#8E1A22] shadow-[0_18px_40px_-20px_rgba(180,35,44,.8)]",
+  ok: { card: "bg-[#EDF4EE] text-[#1F4A32] ring-[#D3E5D8]", accent: "#2E6A43" },
+  warn: { card: "bg-[#FAF2E1] text-[#5E410F] ring-[#ECDEBD]", accent: "#9A6A12" },
+  brand: { card: "bg-[#FBECEA] text-[#6E2219] ring-[#F1D5D0]", accent: "#A8382A" },
 };
 
 /** A ring that empties as the office day runs out; the time left in the middle. */
-function Countdown({ left, total, top, bottom }: { left: number; total: number; top: string; bottom: string }) {
+function Countdown({ left, total, top, bottom, accent }: { left: number; total: number; top: string; bottom: string; accent: string }) {
   const r = 30;
   const c = 2 * Math.PI * r;
   const frac = total > 0 ? Math.min(1, Math.max(0, left / total)) : 0;
   return (
     <div className="relative grid h-[84px] w-[84px] shrink-0 place-items-center sm:h-24 sm:w-24">
       <svg viewBox="0 0 72 72" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden="true">
-        <circle cx="36" cy="36" r={r} fill="none" stroke="rgba(255,255,255,.22)" strokeWidth="6" />
-        <circle cx="36" cy="36" r={r} fill="none" stroke="white" strokeWidth="6" strokeLinecap="round" strokeDasharray={`${frac * c} ${c}`} className="transition-[stroke-dasharray] duration-700 ease-out" />
+        <circle cx="36" cy="36" r={r} fill="none" stroke="rgba(27,34,48,.08)" strokeWidth="6" />
+        <circle cx="36" cy="36" r={r} fill="none" stroke={accent} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${frac * c} ${c}`} className="transition-[stroke-dasharray] duration-700 ease-out" />
       </svg>
       <span className="text-center leading-none">
         <span className="block text-lg font-bold tabular-nums sm:text-xl">{top}</span>
-        <span className="mt-1 block text-[0.62rem] font-semibold text-white/80 sm:text-[0.68rem]">{bottom}</span>
+        <span className="mt-1 block text-[0.62rem] font-semibold opacity-70 sm:text-[0.68rem]">{bottom}</span>
       </span>
     </div>
   );
@@ -82,7 +83,7 @@ function Countdown({ left, total, top, bottom }: { left: number; total: number; 
 
 /**
  * "Are government offices open today?" — from the 2083 holiday notice and office hours, in Nepal time.
- * A widget-like card: green when open, red on a Saturday or holiday (with the next working day), amber on
+ * A calm tinted card: green when open, red on a Saturday or holiday (with the next working day), amber on
  * holidays when citizenship, passport and transport offices still serve. On the right, a ring counts down
  * the office day.
  */
@@ -128,54 +129,50 @@ export function OfficeToday({ locale, compact = false }: { locale: Locale; compa
   const StatusIcon = day.kind === "servicesOpen" ? ShieldCheck : CalendarX2;
 
   return (
-    <div className={`relative animate-rise overflow-hidden rounded-3xl bg-gradient-to-br p-4 text-white sm:p-5 ${tone}`} aria-live="polite">
-      {/* Soft light shapes for depth. */}
-      <span className="pointer-events-none absolute -right-10 -top-14 h-40 w-40 rounded-full bg-white/10 blur-2xl" aria-hidden="true" />
-      <span className="pointer-events-none absolute -bottom-16 left-1/3 h-32 w-32 rounded-full bg-black/10 blur-2xl" aria-hidden="true" />
-
+    <div className={`relative animate-rise rounded-3xl p-4 ring-1 sm:p-5 ${tone.card}`} aria-live="polite">
       <div className="relative flex items-center gap-4">
         <div className="min-w-0 flex-1">
-          <p className="inline-flex items-center gap-2 text-sm font-semibold text-white/85">
+          <p className="inline-flex items-center gap-2 text-sm font-semibold opacity-80">
             {nowOpen && (
               <span className="relative flex h-2.5 w-2.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/70 motion-reduce:animate-none" />
-                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60 motion-reduce:animate-none" style={{ background: tone.accent }} />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full" style={{ background: tone.accent }} />
               </span>
             )}
             {ne ? "आज" : "Today"} · {today.weekday}, {today.month} {n(today.bsDay)}
           </p>
           <p className="mt-1 text-[1.4rem] font-bold leading-tight tracking-tight sm:text-[1.7rem]">{title}</p>
-          {(day.kind === "holiday" || day.kind === "servicesOpen") && <p className="mt-0.5 text-[0.95rem] font-medium text-white/90">{day.names.join(" · ")}</p>}
+          {(day.kind === "holiday" || day.kind === "servicesOpen") && <p className="mt-0.5 text-[0.95rem] font-medium opacity-90">{day.names.join(" · ")}</p>}
           {hours && (
-            <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-sm font-medium backdrop-blur">
+            <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1 text-sm font-medium">
               <Clock className="h-4 w-4 shrink-0" aria-hidden="true" />
               {hoursText(hours, ne)}
             </p>
           )}
           {today.next && (
-            <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-sm font-medium backdrop-blur">
+            <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1 text-sm font-medium">
               {ne ? "अर्को खुल्ने: " : "Next open: "}
               <span className="font-bold">{today.next}</span>
             </p>
           )}
         </div>
         {ring ? (
-          <Countdown {...ring} />
+          <Countdown {...ring} accent={tone.accent} />
         ) : (
-          <span className="grid h-[84px] w-[84px] shrink-0 place-items-center rounded-full bg-white/15 sm:h-24 sm:w-24">
-            <StatusIcon className="h-9 w-9" aria-hidden="true" />
+          <span className="grid h-[84px] w-[84px] shrink-0 place-items-center rounded-full bg-white/80 sm:h-24 sm:w-24">
+            <StatusIcon className="h-9 w-9" style={{ color: tone.accent }} aria-hidden="true" />
           </span>
         )}
       </div>
 
-      {!compact && day.kind === "servicesOpen" && <p className="relative mt-3 rounded-2xl bg-white/15 px-3 py-2 text-sm leading-relaxed">{SERVICES_OPEN_NOTE}</p>}
+      {!compact && day.kind === "servicesOpen" && <p className="relative mt-3 rounded-2xl bg-white/80 px-3 py-2 text-sm leading-relaxed">{SERVICES_OPEN_NOTE}</p>}
       {!compact && day.kind === "open" && day.partial.length > 0 && (
-        <p className="relative mt-3 rounded-2xl bg-white/15 px-3 py-2 text-sm">
+        <p className="relative mt-3 rounded-2xl bg-white/80 px-3 py-2 text-sm">
           {ne ? "केहीका लागि मात्र बिदा: " : "Holiday for some only: "}
           {day.partial.map((h) => `${h.name} (${h.only})`).join(" · ")}
         </p>
       )}
-      {today.year !== HOLIDAY_YEAR && <p className="relative mt-2 text-xs text-white/80">{ne ? `बिदाको सूची ${digits(HOLIDAY_YEAR, "ne")} सालको मात्र` : `Holiday list for ${HOLIDAY_YEAR} BS only`}</p>}
+      {today.year !== HOLIDAY_YEAR && <p className="relative mt-2 text-xs opacity-70">{ne ? `बिदाको सूची ${digits(HOLIDAY_YEAR, "ne")} सालको मात्र` : `Holiday list for ${HOLIDAY_YEAR} BS only`}</p>}
     </div>
   );
 }

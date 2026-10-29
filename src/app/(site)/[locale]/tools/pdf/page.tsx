@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isLocale } from "@/lib/i18n";
 import { ToolHero } from "@/components/tools/ToolHero";
+import { ToolMore } from "@/components/tools/ToolGrid";
 import { DocToPdf } from "@/components/tools/DocToPdf";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
@@ -20,12 +21,16 @@ export default async function Page({ params }: { params: Promise<{ locale: strin
   return (
     <>
       <ToolHero
+        locale={locale}
+        tool="/tools/pdf"
+        width="max-w-4xl"
         first={ne ? "कागजातको फोटो," : "Document photos,"}
         second={ne ? "सानो PDF मा" : "into a small PDF"}
         text={ne ? "अनलाइन फारामले भनेको साइजभित्र, फोनबाटै।" : "Under the size an online form allows, from your phone."}
       />
       <div className="container-page max-w-4xl py-6 sm:py-10">
         <DocToPdf locale={locale} />
+        <ToolMore locale={locale} current="/tools/pdf" />
       </div>
     </>
   );

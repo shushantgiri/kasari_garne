@@ -22,7 +22,7 @@ const SHORT: Record<string, { ne: string; en: string }> = {
 };
 
 /** Red gradient text; the vertical padding keeps Devanagari marks inside the clip. */
-const GRADIENT = "bg-gradient-to-r from-[#D63A44] to-brand-dark bg-clip-text py-[0.12em] text-transparent";
+const GRADIENT = "text-brand";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
@@ -82,7 +82,6 @@ export default async function GuidesPage({
             {ne ? "सजिलो भाषामा, चरण-चरण मार्गदर्शन।" : "Step-by-step help, in simple words."}
           </p>
           <div className="relative z-20 mx-auto mt-7 max-w-xl animate-rise text-left [animation-delay:120ms]">
-            <div className="pointer-events-none absolute -inset-x-6 -inset-y-4 rounded-[2rem] bg-gradient-to-r from-sky/10 via-brand/10 to-sky/10 blur-2xl" aria-hidden="true" />
             <div className="relative">
               <SearchBox locale={locale} teasers={toTeasers(guides, departments)} size="lg" />
             </div>

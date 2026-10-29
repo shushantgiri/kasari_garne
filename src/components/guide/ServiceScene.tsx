@@ -12,7 +12,7 @@ export function ServiceScene({ icon, className = "w-full" }: { icon: IconName; c
   const scene = SCENES[icon as keyof typeof SCENES];
   return (
     <div
-      className={`scene relative aspect-[4/1] overflow-hidden rounded-3xl bg-gradient-to-br from-sky-tint to-white shadow-[0_16px_36px_-24px_rgba(27,34,48,0.5)] ring-1 ring-black/[0.06] ${className}`}
+      className={`scene relative aspect-[4/1] overflow-hidden rounded-3xl bg-sky-tint shadow-[0_16px_36px_-24px_rgba(27,34,48,0.5)] ring-1 ring-black/[0.06] ${className}`}
       aria-hidden="true"
     >
       {scene ? (

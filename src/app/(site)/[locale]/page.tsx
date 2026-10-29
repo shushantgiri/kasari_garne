@@ -67,7 +67,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
               <span className="block">{t.heroParts[0].trim()}</span>
               <span className="block">
                 {/* The vertical padding keeps Devanagari marks inside the gradient's clip. */}
-                <span className="bg-gradient-to-r from-[#D63A44] to-brand-dark bg-clip-text py-[0.12em] text-transparent">{t.heroParts[1]}</span>
+                <span className="text-brand">{t.heroParts[1]}</span>
                 {t.heroParts[2]}
               </span>
             </h1>
@@ -75,7 +75,6 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
             {/* The search box, with a soft glow behind it. */}
             <div className="relative z-20 mt-8 animate-rise [animation-delay:120ms]">
-              <div className="pointer-events-none absolute -inset-x-6 -inset-y-4 rounded-[2rem] bg-gradient-to-r from-sky/10 via-brand/10 to-sky/10 blur-2xl" aria-hidden="true" />
               <div className="relative">
                 <SearchBox locale={locale} teasers={toTeasers(guides, departments)} examples={ROTATING[locale]} />
               </div>

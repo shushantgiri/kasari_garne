@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Bike, Car, Minus, Plus, Receipt } from "lucide-react";
+import { Bike, Car, ChevronDown, MapPin, Minus, Plus, Receipt } from "lucide-react";
 import type { Locale } from "@/lib/content/types";
 import { PROVINCES, TAX_YEAR, vehicleTax, type ProvinceId, type VehicleClass } from "@/lib/content/vehicleTax";
 import { digits } from "@/lib/i18n";
@@ -41,9 +41,23 @@ function useCountUp(target: number): number {
 
 const QUICK_CC: Record<VehicleClass, number[]> = { bike: [110, 125, 150, 160, 200, 250], car: [1000, 1200, 1500, 2000, 2500] };
 
+/** One question: a small number, the question, then its answer. */
+function Step({ no, title, children, side }: { no: string; title: string; children?: React.ReactNode; side?: React.ReactNode }) {
+  return (
+    <div className="py-4 first:pt-0 last:pb-0">
+      <div className="flex items-center gap-2.5">
+        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-paper-warm text-xs font-bold text-ink-soft ring-1 ring-paper-line">{no}</span>
+        <p className="min-w-0 flex-1 font-semibold text-ink">{title}</p>
+        {side}
+      </div>
+      {children && <div className="mt-3">{children}</div>}
+    </div>
+  );
+}
+
 /**
- * Vehicle tax and bluebook renewal: pick the province, bike or car, the engine cc, whether you're late
- * and how many years are unpaid — the total rolls up, with each part listed under it.
+ * Vehicle tax and bluebook renewal as five short questions — province, bike or car, cc, on time or late,
+ * years unpaid — with a receipt beside them whose total rolls to each new answer.
  */
 export function VehicleTaxCalc({ locale }: { locale: Locale }) {
   const ne = locale === "ne";
@@ -64,12 +78,15 @@ export function VehicleTaxCalc({ locale }: { locale: Locale }) {
   };
   const chooseProvince = (id: ProvinceId) => {
     setProvince(id);
-    setLate(-1);
+    setLate((l) => (l === -1 ? -1 : 0));
   };
 
-  const chip = (on: boolean) =>
-    `min-h-[42px] rounded-xl px-3 text-sm font-semibold transition-[background-color,color,box-shadow,transform] duration-150 active:scale-[.97] ${on ? "bg-ink text-white shadow-card" : "bg-white text-ink-soft ring-1 ring-paper-line hover:text-ink"}`;
-  const label = "text-sm font-semibold text-ink-faint";
+  const seg = (on: boolean) =>
+    `inline-flex min-h-[44px] flex-1 items-center justify-center rounded-xl px-3 text-[0.95rem] font-semibold transition-[background-color,color,box-shadow] duration-200 ${on ? "bg-white text-ink shadow-[0_1px_3px_rgba(27,34,48,.14)]" : "text-ink-soft hover:text-ink"}`;
+  const pill = (on: boolean) =>
+    `shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold transition-[background-color,color,transform] duration-150 active:scale-95 ${on ? "bg-ink text-white" : "bg-paper-warm text-ink-soft hover:text-ink"}`;
+  const field = "min-h-[52px] w-full rounded-2xl border border-paper-line bg-white text-ink transition-colors hover:border-ink-faint/40 focus:border-sky focus:outline-none focus:ring-2 focus:ring-sky/25";
+  const stepBtn = "grid h-10 w-10 place-items-center rounded-full bg-white text-ink shadow-sm transition-transform active:scale-90 disabled:opacity-40";
 
   const rows: [string, number][] = [
     [ne ? `यो वर्षको कर (${n(r.slab.from)}–${r.slab.to === Infinity ? "" : n(r.slab.to)} सीसी)` : `This year's tax (${r.slab.from}–${r.slab.to === Infinity ? "" : r.slab.to} cc)`, r.tax],
@@ -81,122 +98,157 @@ export function VehicleTaxCalc({ locale }: { locale: Locale }) {
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-[1.15fr_1fr] md:items-start">
-      <div className="space-y-5 rounded-3xl border border-paper-line bg-white p-4 sm:p-5">
-        {/* Province. */}
-        <div>
-          <p className={label}>{ne ? "प्रदेश" : "Province"}</p>
-          <div className="mt-2 grid grid-cols-3 gap-1.5 sm:grid-cols-4">
-            {PROVINCES.map((x) => (
-              <button key={x.id} type="button" onClick={() => chooseProvince(x.id)} aria-pressed={province === x.id} className={chip(province === x.id)}>
-                {ne ? x.ne : x.en}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Bike or car. */}
-        <div className="flex rounded-xl bg-paper-warm p-1">
-          {([
-            ["bike", Bike, ne ? "मोटरसाइकल / स्कुटर" : "Motorcycle / scooter"],
-            ["car", Car, ne ? "कार / जिप / भ्यान" : "Car / jeep / van"],
-          ] as const).map(([v, Icon, l]) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => chooseVehicle(v)}
-              aria-pressed={vehicle === v}
-              className={`inline-flex min-h-[44px] flex-1 items-center justify-center gap-2 rounded-lg px-2 text-sm font-semibold transition-[background-color,color,box-shadow] duration-150 ${vehicle === v ? "bg-white text-ink shadow-[0_1px_3px_rgba(27,34,48,.12)]" : "text-ink-soft"}`}
+    <div className="grid gap-4 md:grid-cols-[1.1fr_1fr] md:items-start md:gap-6">
+      <div className="divide-y divide-paper-line rounded-3xl bg-white p-4 shadow-[0_1px_2px_rgba(27,34,48,.04),0_10px_30px_-20px_rgba(27,34,48,.3)] ring-1 ring-paper-line sm:p-6">
+        {/* 1. Province: the phone's own picker, so seven names never crowd the screen. */}
+        <Step no={n(1)} title={ne ? "कुन प्रदेशमा दर्ता छ?" : "Registered in which province?"}>
+          <div className="relative">
+            <MapPin className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
+            <select
+              value={province}
+              onChange={(e) => chooseProvince(e.target.value as ProvinceId)}
+              aria-label={ne ? "प्रदेश" : "Province"}
+              className={`${field} appearance-none pl-12 pr-10 text-[1.05rem] font-semibold`}
             >
-              <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-              <span className="truncate">{l}</span>
-            </button>
-          ))}
-        </div>
+              {PROVINCES.map((x) => (
+                <option key={x.id} value={x.id}>
+                  {ne ? `${x.ne} प्रदेश` : x.en}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-faint" aria-hidden="true" />
+          </div>
+        </Step>
 
-        {/* Engine size. */}
-        <div>
-          <label htmlFor="cc" className={label}>
-            {ne ? "इन्जिन क्षमता (सीसी) — ब्लुबुकमा लेखिएको" : "Engine size (cc) — as in the bluebook"}
-          </label>
-          <input
-            id="cc"
-            type="number"
-            inputMode="numeric"
-            min={1}
-            value={cc || ""}
-            onChange={(e) => setCc(Math.max(0, Number(e.target.value)))}
-            className="mt-2 min-h-[52px] w-full rounded-xl border border-paper-line px-4 text-lg font-bold text-ink focus:border-sky focus:outline-none focus:ring-2 focus:ring-sky/25"
-          />
-          <div className="no-scrollbar mt-2 flex gap-1.5 overflow-x-auto">
+        {/* 2. Bike or car: two big tiles. */}
+        <Step no={n(2)} title={ne ? "कुन सवारी?" : "Which vehicle?"}>
+          <div className="grid grid-cols-2 gap-2.5">
+            {([
+              ["bike", Bike, ne ? "मोटरसाइकल" : "Motorcycle", ne ? "स्कुटर पनि" : "or scooter"],
+              ["car", Car, ne ? "कार" : "Car", ne ? "जिप, भ्यान पनि" : "jeep or van"],
+            ] as const).map(([v, Icon, l, sub]) => {
+              const on = vehicle === v;
+              return (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => chooseVehicle(v)}
+                  aria-pressed={on}
+                  className={`flex items-center gap-3 rounded-2xl p-3 text-left transition-[background-color,box-shadow,transform] duration-200 active:scale-[.98] ${on ? "bg-paper-warm ring-2 ring-ink" : "bg-white ring-1 ring-paper-line hover:ring-ink-faint/40"}`}
+                >
+                  <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl transition-colors duration-200 ${on ? "bg-[#F5EBD6] text-[#86591A]" : "bg-paper-warm text-ink-soft"}`}>
+                    <Icon className="h-6 w-6" strokeWidth={1.9} aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block font-bold leading-tight text-ink">{l}</span>
+                    <span className="block text-sm leading-tight text-ink-faint">{sub}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </Step>
+
+        {/* 3. Engine size. */}
+        <Step no={n(3)} title={ne ? "इन्जिन कति सीसी? (ब्लुबुकमा)" : "Engine cc? (in the bluebook)"}>
+          <div className="relative">
+            <input
+              type="number"
+              inputMode="numeric"
+              min={1}
+              value={cc || ""}
+              onChange={(e) => setCc(Math.max(0, Number(e.target.value)))}
+              aria-label={ne ? "इन्जिन क्षमता (सीसी)" : "Engine size (cc)"}
+              className={`${field} px-4 pr-14 text-lg font-bold tabular-nums`}
+            />
+            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-ink-faint">{ne ? "सीसी" : "cc"}</span>
+          </div>
+          <div className="no-scrollbar mt-2.5 flex gap-1.5 overflow-x-auto">
             {QUICK_CC[vehicle].map((v) => (
-              <button key={v} type="button" onClick={() => setCc(v)} className={`shrink-0 rounded-full px-3 py-1.5 text-sm font-semibold transition-colors ${cc === v ? "bg-sky text-white" : "bg-sky-tint text-sky hover:bg-sky/15"}`}>
+              <button key={v} type="button" onClick={() => setCc(v)} className={pill(cc === v)}>
                 {n(v)}
               </button>
             ))}
           </div>
-        </div>
+        </Step>
 
-        {/* On time or late. */}
-        <div>
-          <p className={label}>{ne ? "यो वर्षको कर कहिले तिर्दै हुनुहुन्छ?" : "When are you paying this year's tax?"}</p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            <button type="button" onClick={() => setLate(-1)} aria-pressed={late === -1} className={chip(late === -1)}>
-              {ne ? "म्यादभित्रै (९० दिन)" : "On time (90 days)"}
+        {/* 4. On time or late; the late choices open only when needed. */}
+        <Step no={n(4)} title={ne ? "यो वर्षको कर समयमै?" : "Paying this year on time?"}>
+          <div className="flex rounded-2xl bg-paper-warm p-1">
+            <button type="button" onClick={() => setLate(-1)} aria-pressed={late === -1} className={seg(late === -1)}>
+              {ne ? "समयमै" : "On time"}
             </button>
-            {p.lateThisYear.map((s, i) => (
-              <button key={s.en} type="button" onClick={() => setLate(i)} aria-pressed={late === i} className={chip(late === i)}>
-                {ne ? s.ne : s.en}
+            <button type="button" onClick={() => setLate((l) => (l === -1 ? 0 : l))} aria-pressed={late !== -1} className={seg(late !== -1)}>
+              {ne ? "ढिलो भयो" : "Late"}
+            </button>
+          </div>
+          {late !== -1 && (
+            <div className="mt-2.5 grid animate-pop gap-1.5">
+              {p.lateThisYear.map((s, i) => {
+                const on = late === i;
+                return (
+                  <button
+                    key={s.en}
+                    type="button"
+                    onClick={() => setLate(i)}
+                    aria-pressed={on}
+                    className={`flex min-h-[46px] items-center gap-3 rounded-xl px-3.5 text-left text-[0.95rem] transition-[background-color,box-shadow] duration-150 ${on ? "bg-paper-warm font-semibold text-ink ring-2 ring-ink" : "bg-white text-ink-soft ring-1 ring-paper-line hover:text-ink"}`}
+                  >
+                    <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-colors ${on ? "border-ink" : "border-paper-line"}`}>
+                      {on && <span className="h-2.5 w-2.5 rounded-full bg-ink" />}
+                    </span>
+                    {ne ? s.ne : s.en}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </Step>
+
+        {/* 5. Years behind. */}
+        <Step
+          no={n(5)}
+          title={ne ? "अघिल्ला कति वर्ष बाँकी?" : "Earlier years unpaid?"}
+          side={
+            <div className="flex items-center gap-1 rounded-full bg-paper-warm p-1">
+              <button type="button" onClick={() => setYears((y) => Math.max(0, y - 1))} aria-label={ne ? "घटाउनुहोस्" : "Fewer"} className={stepBtn} disabled={years === 0}>
+                <Minus className="h-4 w-4" aria-hidden="true" />
               </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Years behind. */}
-        <div className="flex items-center justify-between gap-3">
-          <p className={label}>{ne ? "अघिल्ला कति वर्षको कर बाँकी छ?" : "Earlier years unpaid?"}</p>
-          <div className="flex items-center gap-1 rounded-full bg-paper-warm p-1">
-            <button type="button" onClick={() => setYears((y) => Math.max(0, y - 1))} aria-label={ne ? "घटाउनुहोस्" : "Fewer"} className="grid h-9 w-9 place-items-center rounded-full bg-white text-ink shadow-sm active:scale-90 disabled:opacity-40" disabled={years === 0}>
-              <Minus className="h-4 w-4" aria-hidden="true" />
-            </button>
-            <span key={years} className="w-8 animate-pop text-center text-lg font-bold tabular-nums text-ink">{n(years)}</span>
-            <button type="button" onClick={() => setYears((y) => Math.min(5, y + 1))} aria-label={ne ? "बढाउनुहोस्" : "More"} className="grid h-9 w-9 place-items-center rounded-full bg-white text-ink shadow-sm active:scale-90 disabled:opacity-40" disabled={years === 5}>
-              <Plus className="h-4 w-4" aria-hidden="true" />
-            </button>
-          </div>
-        </div>
+              <span key={years} className="w-8 animate-pop text-center text-lg font-bold tabular-nums text-ink">{n(years)}</span>
+              <button type="button" onClick={() => setYears((y) => Math.min(5, y + 1))} aria-label={ne ? "बढाउनुहोस्" : "More"} className={stepBtn} disabled={years === 5}>
+                <Plus className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </div>
+          }
+        />
       </div>
 
-      {/* The bill. */}
+      {/* The receipt. */}
       <div className="md:sticky md:top-20">
-        <div className="overflow-hidden rounded-3xl bg-ink text-white shadow-[0_24px_48px_-28px_rgba(27,34,48,.8)]">
-          <div className="p-5 sm:p-6">
-            <div className="flex items-center gap-2 text-sm text-white/70">
+        <div className="overflow-hidden rounded-3xl bg-white shadow-[0_1px_2px_rgba(27,34,48,.04),0_18px_40px_-24px_rgba(27,34,48,.4)] ring-1 ring-paper-line">
+          <div className="relative bg-ink p-5 text-white sm:p-6">
+            <p className="relative flex items-center gap-2 text-sm font-semibold text-white/70">
               <Receipt className="h-4 w-4" aria-hidden="true" />
-              {ne ? `${p.ne} प्रदेश · आ.व. ${TAX_YEAR}` : `${p.en} · FY 2083/84`}
-            </div>
-            <p className="mt-2 text-sm text-white/70">{ne ? "जम्मा तिर्नुपर्ने (अनुमानित)" : "Total to pay (estimate)"}</p>
-            <p className="mt-0.5 text-[2.4rem] font-bold leading-none tracking-tight tabular-nums">
-              <span className="mr-1 text-xl font-semibold text-white/70">{ne ? "रु." : "Rs"}</span>
+              {/* Sudurpashchim's 2083/84 act isn't out yet, so its rates are last year's. */}
+              {ne ? `${p.ne} प्रदेश · आ.व. ${p.note ? "२०८२/८३" : TAX_YEAR}` : `${p.en} · FY ${p.note ? "2082/83" : "2083/84"}`}
+            </p>
+            <p className="relative mt-3 text-sm text-white/70">{ne ? "जम्मा तिर्नुपर्ने (अनुमानित)" : "Total to pay (estimate)"}</p>
+            <p className="relative mt-1 text-[2.6rem] font-bold leading-none tracking-tight tabular-nums">
+              <span className="mr-1.5 text-xl font-semibold text-white/60">{ne ? "रु." : "Rs"}</span>
               {rupees(total, ne)}
             </p>
           </div>
-          <ul className="space-y-0 border-t border-white/10 px-5 py-3 text-[0.95rem] sm:px-6">
+          <ul className="px-5 py-2 sm:px-6">
             {rows
               .filter(([, v]) => v > 0)
               .map(([l, v]) => (
-                <li key={l} className="flex animate-rise items-baseline justify-between gap-3 py-1.5">
-                  <span className="text-white/75">{l}</span>
-                  <span className="font-semibold tabular-nums">{rupees(v, ne)}</span>
+                <li key={l} className="flex animate-rise items-baseline justify-between gap-3 border-b border-dashed border-paper-line py-3 last:border-0">
+                  <span className="text-ink-soft">{l}</span>
+                  <span className="font-bold tabular-nums text-ink">{rupees(v, ne)}</span>
                 </li>
               ))}
           </ul>
         </div>
-        <p className="mt-3 px-1 text-xs leading-relaxed text-ink-faint">
-          {ne
-            ? `दर: प्रदेश आर्थिक ऐन २०८३${p.note ? ` (${p.note})` : ""}। तेस्रो पक्ष बीमा, १५ वर्षभन्दा पुराना सवारीको थप कर, विद्युतीय सवारी र छुट योजना समावेश छैनन्। अघिल्ला वर्षको कर आजको दरले जोडिएको। अन्तिम रकम यातायात कार्यालयको बिलअनुसार हुन्छ।`
-            : `Rates: provincial Finance Acts 2083${p.note ? ` (${p.en}: 2082/83 rates)` : ""}. Not included: third-party insurance, the extra tax on vehicles over 15 years old, electric vehicles and relief schemes. Earlier years use today's rate. The transport office's bill is final.`}
-        </p>
       </div>
     </div>
   );

@@ -313,7 +313,7 @@ export default async function GuidePage({ params }: { params: Promise<{ locale: 
             {/* The one big action: who runs it, the address, one button. */}
             {guide.officialPortal && (
               <div>
-                <div className="flex flex-col gap-4 rounded-2xl border border-ok/20 bg-gradient-to-br from-ok-tint/80 to-white p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+                <div className="flex flex-col gap-4 rounded-2xl border border-ok/20 bg-ok-tint/60 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
                   <div className="flex min-w-0 items-center gap-3">
                     <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white text-ok shadow-card ring-1 ring-ok/15">
                       <ShieldCheck className="h-5 w-5" aria-hidden="true" />

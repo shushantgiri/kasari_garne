@@ -89,7 +89,7 @@ export function DateConverter({ locale }: { locale: Locale }) {
   const years = Array.from({ length: BS_MAX_YEAR - BS_MIN_YEAR + 1 }, (_, i) => BS_MAX_YEAR - i);
 
   return (
-    <div className="overflow-hidden rounded-3xl border border-paper-line bg-white">
+    <div className="overflow-hidden rounded-3xl bg-white shadow-[0_1px_2px_rgba(27,34,48,.04),0_10px_30px_-20px_rgba(27,34,48,.3)] ring-1 ring-paper-line">
       <div className="p-4 sm:p-5">
         <p className="text-sm font-semibold text-ink-faint">{from === "bs" ? (ne ? "विक्रम संवत् (वि.सं.) मिति" : "Date in BS") : ne ? "अंग्रेजी (ई.सं.) मिति" : "Date in AD"}</p>
         <div key={from} className="mt-2 animate-rise">
@@ -129,7 +129,7 @@ export function DateConverter({ locale }: { locale: Locale }) {
         </button>
       </div>
 
-      <div className="border-t border-paper-line bg-gradient-to-br from-sky-tint to-white p-4 pt-6 sm:p-5 sm:pt-7">
+      <div className="border-t border-paper-line bg-paper-warm p-4 pt-6 sm:p-5 sm:pt-7">
         <p className="text-sm font-semibold text-ink-faint">{from === "bs" ? (ne ? "अंग्रेजी (ई.सं.) मा" : "In AD") : ne ? "विक्रम संवत्मा" : "In BS"}</p>
         {out && result ? (
           <div key={out.copy} className="mt-1 animate-pop">

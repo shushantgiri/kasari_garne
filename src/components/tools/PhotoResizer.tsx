@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
-import { AlertTriangle, CheckCircle2, Download, ImagePlus, ShieldCheck } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Download, ImagePlus } from "lucide-react";
 import type { Locale } from "@/lib/content/types";
 import { digits } from "@/lib/i18n";
 
@@ -110,18 +110,19 @@ export function PhotoResizer({ locale }: { locale: Locale }) {
 
   const n = (v: number) => digits(v, locale);
   const label = "mb-2 block text-sm font-semibold text-ink-faint";
+  const num = "grid h-6 w-6 shrink-0 place-items-center rounded-full bg-paper-warm text-xs font-bold text-ink-soft ring-1 ring-paper-line";
 
   return (
     <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] md:items-start">
       {/* ---------- Settings ---------- */}
       <div className="space-y-4">
-        <section className="rounded-3xl border border-paper-line bg-white p-5 sm:p-6">
-          <h2 className="font-bold text-ink">{ne ? "१. फोटो छान्नुहोस्" : "1. Choose a picture"}</h2>
+        <section className="rounded-3xl bg-white p-4 shadow-[0_1px_2px_rgba(27,34,48,.04),0_10px_30px_-20px_rgba(27,34,48,.3)] ring-1 ring-paper-line sm:p-6">
+          <h2 className="flex items-center gap-2.5 font-bold text-ink"><span className={num}>{n(1)}</span>{ne ? "फोटो छान्नुहोस्" : "Choose a picture"}</h2>
           <label
             htmlFor={`${id}-file`}
-            className="mt-3 flex min-h-[112px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-paper-line bg-paper-warm/50 px-4 py-5 text-center transition-colors hover:border-sky/40 hover:bg-sky-tint/40 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-sky/40"
+            className="mt-3 flex min-h-[112px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-paper-line bg-paper-warm/60 px-4 py-5 text-center transition-colors hover:border-ink-faint/50 hover:bg-paper-warm has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ink/20"
           >
-            <ImagePlus className="h-7 w-7 text-sky" aria-hidden="true" />
+            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#ECE7F1] text-[#5A4580]"><ImagePlus className="h-6 w-6" aria-hidden="true" /></span>
             <span className="font-semibold text-ink">{image ? fileName : ne ? "फोटो छान्नुहोस् वा खिच्नुहोस्" : "Choose or take a photo"}</span>
             <span className="text-sm text-ink-faint">{image ? (ne ? "बदल्न थिच्नुहोस्" : "Tap to change") : "JPG, PNG"}</span>
             <input id={`${id}-file`} type="file" accept="image/*" className="sr-only" onChange={(e) => open(e.target.files?.[0])} />
@@ -129,8 +130,8 @@ export function PhotoResizer({ locale }: { locale: Locale }) {
           {error && <p role="alert" className="mt-2 text-sm text-brand-dark">{error}</p>}
         </section>
 
-        <section className="rounded-3xl border border-paper-line bg-white p-5 sm:p-6">
-          <h2 className="font-bold text-ink">{ne ? "२. साइज छान्नुहोस्" : "2. Choose the size"}</h2>
+        <section className="rounded-3xl bg-white p-4 shadow-[0_1px_2px_rgba(27,34,48,.04),0_10px_30px_-20px_rgba(27,34,48,.3)] ring-1 ring-paper-line sm:p-6">
+          <h2 className="flex items-center gap-2.5 font-bold text-ink"><span className={num}>{n(2)}</span>{ne ? "साइज छान्नुहोस्" : "Choose the size"}</h2>
           <div className="mt-3 grid grid-cols-2 gap-2">
             {PRESETS.map((p) => {
               const on = preset.id === p.id;
@@ -140,7 +141,7 @@ export function PhotoResizer({ locale }: { locale: Locale }) {
                   type="button"
                   onClick={() => pick(p)}
                   aria-pressed={on}
-                  className={`flex min-h-[56px] flex-col items-start justify-center rounded-xl border px-3 py-2 text-left transition-colors ${on ? "border-brand bg-brand-tint/50" : "border-paper-line hover:border-ink-faint/40"} ${p.id === "custom" ? "col-span-2" : ""}`}
+                  className={`flex min-h-[56px] flex-col items-start justify-center rounded-xl px-3 py-2 text-left transition-[background-color,box-shadow,transform] duration-200 active:scale-[.98] ${on ? "bg-paper-warm ring-2 ring-ink" : "ring-1 ring-paper-line hover:ring-ink-faint/40"} ${p.id === "custom" ? "col-span-2" : ""}`}
                 >
                   <span className="text-sm font-semibold leading-snug text-ink">{ne ? p.ne : p.en}</span>
                   <span className="latin text-xs text-ink-faint">{p.hint}</span>
@@ -185,8 +186,8 @@ export function PhotoResizer({ locale }: { locale: Locale }) {
       </div>
 
       {/* ---------- Result ---------- */}
-      <section className="rounded-3xl border border-paper-line bg-white p-5 sm:p-6 md:sticky md:top-24" aria-live="polite">
-        <h2 className="font-bold text-ink">{ne ? "३. डाउनलोड गर्नुहोस्" : "3. Download"}</h2>
+      <section className="rounded-3xl bg-white p-4 shadow-[0_1px_2px_rgba(27,34,48,.04),0_10px_30px_-20px_rgba(27,34,48,.3)] ring-1 ring-paper-line sm:p-6 md:sticky md:top-24" aria-live="polite">
+        <h2 className="flex items-center gap-2.5 font-bold text-ink"><span className={num}>{n(3)}</span>{ne ? "डाउनलोड गर्नुहोस्" : "Download"}</h2>
         <div className="mt-3 grid min-h-[220px] place-items-center rounded-2xl bg-[repeating-conic-gradient(#F3F1ED_0_25%,#FBFAF8_0_50%)] bg-[length:20px_20px] p-4">
           {result && image ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -198,7 +199,7 @@ export function PhotoResizer({ locale }: { locale: Locale }) {
 
         {result && image && (
           <>
-            <p className={`mt-3 flex items-center gap-2 text-sm font-semibold ${result.ok ? "text-ok" : "text-warn"}`}>
+            <p className={`mt-3 flex animate-pop items-center gap-2 text-sm font-semibold ${result.ok ? "text-ok" : "text-warn"}`}>
               {result.ok ? <CheckCircle2 className="h-4 w-4" aria-hidden="true" /> : <AlertTriangle className="h-4 w-4" aria-hidden="true" />}
               <span className="latin">{n(w)} × {n(h)} px · {n(Math.max(1, Math.round(result.bytes / 1024)))} KB · JPG</span>
             </p>
@@ -212,10 +213,6 @@ export function PhotoResizer({ locale }: { locale: Locale }) {
           </>
         )}
 
-        <p className="mt-4 flex gap-2 text-sm text-ink-faint">
-          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-ok" aria-hidden="true" />
-          {ne ? "फोटो कतै पठाइँदैन। सबै काम तपाईंकै फोन वा कम्प्युटरमा हुन्छ।" : "Your picture is never uploaded. Everything happens on your own phone or computer."}
-        </p>
       </section>
     </div>
   );

@@ -35,7 +35,7 @@ export default async function PracticePage({ params }: { params: Promise<{ local
           </Link>
           <h1 className="mt-2 animate-rise text-[2rem] font-bold leading-[1.15] tracking-[-0.02em] sm:text-[2.5rem]">
             {ne ? "लाइसेन्स परीक्षाको" : "Licence test"}{" "}
-            <span className="bg-gradient-to-r from-[#D63A44] to-brand-dark bg-clip-text py-[0.12em] text-transparent">{ne ? "अभ्यास" : "practice"}</span>
+            <span className="text-brand">{ne ? "अभ्यास" : "practice"}</span>
           </h1>
           <p className="mt-2 animate-rise text-ink-soft [animation-delay:60ms] sm:text-lg">
             {ne ? "कार्यालयको जस्तै नमुना परीक्षा, र रङ पहिचान जाँच।" : "A mock test like the one at the office, and a colour check."}
