@@ -66,6 +66,8 @@ export function GuideFlow({ locale, slug, serviceName, situations, gap, document
     setChanging(false);
     setJustChose(true);
     setView("video");
+    // In the step-by-step layout, open the step that holds the video (or the "not ready" note).
+    window.dispatchEvent(new CustomEvent("kg:tab", { detail: { section: situations.find((x) => x.id === id)?.pending ? "not-ready" : "video" } }));
     const url = new URL(window.location.href);
     url.searchParams.set("for", id);
     window.history.replaceState(null, "", url);
@@ -149,7 +151,7 @@ export function GuideFlow({ locale, slug, serviceName, situations, gap, document
   return (
     <>
       {hasChoice && (
-        <section aria-labelledby="purpose-title" className="scroll-mt-24" id="purpose">
+        <section aria-labelledby="purpose-title" className="scroll-mt-36" id="purpose">
           <StageTitle n={1} id="purpose-title" locale={locale}>
             {ne ? "तपाईं के गर्न चाहनुहुन्छ?" : "What do you want to do?"}
           </StageTitle>
@@ -209,7 +211,7 @@ export function GuideFlow({ locale, slug, serviceName, situations, gap, document
 
       {/* A purpose we can't verify yet: say so plainly, and point to places that can help. */}
       {pending && chosen && (
-        <section id="not-ready" className="scroll-mt-24" aria-labelledby="not-ready-title">
+        <section id="not-ready" className="scroll-mt-36" aria-labelledby="not-ready-title">
           <StageTitle id="not-ready-title">{ne ? "यो निर्देशिका अझै तयार छैन" : "This guide isn't ready yet"}</StageTitle>
           <p className="mt-2 max-w-2xl text-ink-soft">
             {ne
@@ -249,7 +251,7 @@ export function GuideFlow({ locale, slug, serviceName, situations, gap, document
 
       {/* ---------- How to do it: watch the video or read the steps ---------- */}
       {!pending && (
-        <section id="video" className="scroll-mt-24" aria-labelledby="video-title">
+        <section id="video" className="scroll-mt-36" aria-labelledby="video-title">
           <StageTitle n={n0 + 1} id="video-title" locale={locale}>
             {ne ? "कसरी गर्ने?" : "How to do it"}
           </StageTitle>
@@ -280,7 +282,7 @@ export function GuideFlow({ locale, slug, serviceName, situations, gap, document
           )}
 
           {script && video ? (
-            <div id="panel-video" role={tabs ? "tabpanel" : undefined} aria-labelledby={tabs ? "tab-video" : undefined} className={`mt-4 scroll-mt-24 ${tabs && view !== "video" ? "hidden" : ""}`}>
+            <div id="panel-video" role={tabs ? "tabpanel" : undefined} aria-labelledby={tabs ? "tab-video" : undefined} className={`mt-4 scroll-mt-36 ${tabs && view !== "video" ? "hidden" : ""}`}>
               {/* key: a new purpose starts its own video from the beginning */}
               <TutorialPlayer key={choice ?? "all"} locale={locale} script={script} video={video} />
             </div>
@@ -289,7 +291,7 @@ export function GuideFlow({ locale, slug, serviceName, situations, gap, document
           )}
 
           {stepList.length > 0 && (
-            <div id="steps" role={tabs ? "tabpanel" : undefined} aria-labelledby={tabs ? "tab-steps" : undefined} className={`mt-4 scroll-mt-24 ${tabs && view !== "steps" ? "hidden print:block" : ""}`}>
+            <div id="steps" role={tabs ? "tabpanel" : undefined} aria-labelledby={tabs ? "tab-steps" : undefined} className={`mt-4 scroll-mt-36 ${tabs && view !== "steps" ? "hidden print:block" : ""}`}>
               <StepGuide locale={locale} steps={stepList} memoryKey={`${slug}-${choice ?? "all"}`} finishHref={finishHref} />
             </div>
           )}
@@ -298,7 +300,7 @@ export function GuideFlow({ locale, slug, serviceName, situations, gap, document
 
       {/* ---------- What you need ---------- */}
       {!pending && (
-        <section id="need" className="scroll-mt-24" aria-labelledby="need-title">
+        <section id="need" className="scroll-mt-36" aria-labelledby="need-title">
           <StageTitle n={n0 + 2} id="need-title" locale={locale}>
             {ne ? "आवश्यक कागजात" : "Documents you need"}
           </StageTitle>
@@ -314,6 +316,7 @@ export function GuideFlow({ locale, slug, serviceName, situations, gap, document
                 key={choice ?? "all"}
                 locale={locale}
                 slug={choice ? `${slug}-${choice}` : slug}
+                title={serviceName}
                 // Once a purpose is chosen, "only when…" notes that just restate the purpose are noise; keep the rest.
                 items={docs.map((d) => ({ text: d.text, when: choice && d.for?.length ? undefined : d.when, note: d.note }))}
               />

@@ -9,7 +9,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test src/lib/search/search.test.ts src/lib/admin/validate.test.ts src/lib/translit.test.ts",
+    "test": "node --experimental-strip-types --test src/lib/search/search.test.ts src/lib/admin/validate.test.ts src/lib/translit.test.ts src/lib/trial/course.test.ts src/lib/tools.test.ts",
     "subtitles": "node --experimental-strip-types scripts/export-subtitles.ts",
     "check-links": "node --experimental-strip-types scripts/check-links.ts",
     "seed": "node --experimental-strip-types scripts/seed-supabase.ts",
@@ -27,12 +27,14 @@
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "server-only": "^0.0.1"
+    "server-only": "^0.0.1",
+    "three": "0.170.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "@types/three": "0.170.0",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",

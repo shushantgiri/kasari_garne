@@ -9,6 +9,8 @@ import { ServiceCard } from "@/components/home/ServiceCard";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { AssistantChat } from "@/components/guide/AssistantChat";
+import { ToolGrid } from "@/components/tools/ToolGrid";
+import { OfficeToday } from "@/components/tools/OfficeToday";
 import { buildKnowledge } from "@/lib/assist/answer";
 
 export const revalidate = 300;
@@ -104,6 +106,15 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             <li key={g.slug}><ServiceCard guide={g} locale={locale} /></li>
           ))}
         </ul>
+      </section>
+
+      {/* Handy tools, with today's office status first. */}
+      <section className="container-page pb-10 sm:pb-14" aria-labelledby="tools-title">
+        <SectionHead id="tools-title" title={ne ? "उपयोगी उपकरण" : "Handy tools"} href={`/${locale}/tools`} linkLabel={ne ? "सबै" : "All"} />
+        <div className="mt-5 space-y-3">
+          <OfficeToday locale={locale} compact />
+          <ToolGrid locale={locale} />
+        </div>
       </section>
 
       {/* Recently checked */}

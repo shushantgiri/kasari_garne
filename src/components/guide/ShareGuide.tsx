@@ -9,7 +9,8 @@ import type { Locale } from "@/lib/content/types";
  * copy the link, and the phone's own share sheet where there is one.
  * The link keeps the chosen purpose (?for=…), so the person receiving it lands on the same steps.
  */
-export function ShareGuide({ locale, title }: { locale: Locale; title: string }) {
+/** `buttonClassName` styles the Share button, to match the buttons beside it. */
+export function ShareGuide({ locale, title, buttonClassName }: { locale: Locale; title: string; buttonClassName?: string }) {
   const ne = locale === "ne";
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -56,7 +57,7 @@ export function ShareGuide({ locale, title }: { locale: Locale; title: string })
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-haspopup="menu"
-        className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-ink shadow-card ring-1 ring-paper-line transition-[box-shadow,transform] duration-150 hover:shadow-pop active:scale-[.98]"
+        className={buttonClassName ?? "inline-flex min-h-[44px] items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-ink shadow-card ring-1 ring-paper-line transition-[box-shadow,transform] duration-150 hover:shadow-pop active:scale-[.98]"}
       >
         <Share2 className="h-4 w-4 text-sky" aria-hidden="true" />
         {ne ? "शेयर" : "Share"}

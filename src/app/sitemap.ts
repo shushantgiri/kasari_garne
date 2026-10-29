@@ -6,7 +6,7 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const guides = (await getGuides()).filter((g) => g.published && g.status !== "archived");
-  const pages = ["", "/guides", "/tools/photo", "/tools/letters", ...LETTERS.map((l) => `/tools/letters/${l.id}`), "/request", "/privacy", "/accessibility"];
+  const pages = ["", "/guides", "/tools", "/tools/photo", "/tools/pdf", "/tools/calendar", "/tools/status", "/tools/vehicle-tax", "/tools/letters", ...LETTERS.map((l) => `/tools/letters/${l.id}`), "/request", "/privacy", "/accessibility"];
   // Each page lists its other-language version too, so search shows the right one.
   const both = (path: string) => ({ languages: { ne: `${SITE}/ne${path}`, en: `${SITE}/en${path}` } });
   return ["ne", "en"].flatMap((l) => [

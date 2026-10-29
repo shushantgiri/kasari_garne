@@ -11,11 +11,11 @@ import { FactTag } from "@/components/ui/FactTag";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
 import { AssistantChat } from "@/components/guide/AssistantChat";
 import { buildKnowledge } from "@/lib/assist/answer";
-import { SectionNav } from "@/components/guide/SectionNav";
+import { GuideTabs, type GuideTab } from "@/components/guide/GuideTabs";
 import { GuideFlow } from "@/components/guide/GuideFlow";
 import { ServiceScene } from "@/components/guide/ServiceScene";
 import { StageTitle } from "@/components/guide/StageTitle";
-import { FeedbackWidget } from "@/components/guide/FeedbackWidget";
+import { FeedbackPrompt } from "@/components/guide/FeedbackPrompt";
 import { ReportDialog } from "@/components/guide/ReportDialog";
 import { InfoDialog } from "@/components/guide/InfoDialog";
 import { ShareGuide } from "@/components/guide/ShareGuide";
@@ -59,6 +59,9 @@ const MODE: Record<ProcessMode, { ne: string; en: string; cls: string }> = {
   in_person: { ne: "कार्यालयमै जानुपर्छ", en: "In person only", cls: "bg-paper-warm text-ink" },
   awaiting_verification: { ne: "प्रक्रिया पुष्टि हुन बाँकी", en: "Process awaiting verification", cls: "bg-warn-tint text-warn" },
 };
+
+/** The header's action buttons: a tile (icon above the label) on phones, a pill on wider screens. */
+const ACTION = "inline-flex h-full min-h-[64px] w-full flex-col items-center justify-center gap-1 rounded-2xl px-2 text-xs font-semibold shadow-card transition-[box-shadow,transform,background-color] duration-150 active:scale-[.97] sm:min-h-[44px] sm:w-auto sm:flex-row sm:gap-2 sm:rounded-full sm:px-4 sm:text-sm";
 
 const official = <T extends { check: Fact["check"] }>(xs: T[]) => xs.filter((x) => x.check === "official");
 
@@ -138,6 +141,14 @@ export default async function GuidePage({ params }: { params: Promise<{ locale: 
   };
 
   const hasChoice = (guide.situations?.length ?? 0) > 1;
+  // The guide's steps, one shown at a time; each lists the page sections it holds.
+  const steps: GuideTab[] = [
+    ...(hasChoice ? [{ id: "purpose", label: ne ? "काम छान्नुहोस्" : "Choose", sections: ["purpose", "not-ready"] }] : []),
+    { id: "how", label: ne ? "कसरी गर्ने" : "How to do it", sections: hasChoice ? ["video"] : ["video", "not-ready"] },
+    { id: "need", label: ne ? "कागजात" : "Documents", sections: ["need"] },
+    { id: "apply", label: ne ? "आवेदन" : "Apply", sections: ["finish"] },
+    ...(guide.faqs.length > 0 || related.length > 0 ? [{ id: "more", label: ne ? "प्रश्न र थप" : "Questions", sections: ["faq", "related"] }] : []),
+  ];
   // Stage numbers continue GuideFlow's: purpose (if any), how to do it, documents, then apply.
   const applyN = (hasChoice ? 1 : 0) + 3;
 
@@ -146,12 +157,14 @@ export default async function GuidePage({ params }: { params: Promise<{ locale: 
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faq ? [howTo, breadcrumbs, faq] : [howTo, breadcrumbs]) }} />
 
       {/* ---------- Header: what this is, in a few words ---------- */}
-      {/* Not clipped and above the content below, so the Share menu can open over it. */}
-      <header className="mesh-bg grain z-10 border-b border-paper-line">
+      {/* Not clipped and above the content below, so the Share menu can open over it;
+          while the menu is open it also rises above the sticky step bar. */}
+      <header className="mesh-bg grain z-10 border-b border-paper-line has-[[role=menu]]:z-40">
         <div className="container-page relative max-w-3xl pb-8 pt-6 sm:pb-10 sm:pt-8">
           {/* The moving scene as a wide banner, then the text below it. */}
           <div>
-            <ServiceScene icon={guide.icon} className="w-full animate-rise" />
+            {/* A little taller on phones, so the vehicles are big enough to see. */}
+            <ServiceScene icon={guide.icon} className="w-full animate-rise max-sm:aspect-[3/1]" />
             <div className="mt-6 min-w-0 animate-rise [animation-delay:60ms] sm:mt-7">
               <p className="flex items-center gap-1.5 text-sm font-semibold text-brand">
                 <ServiceIcon name={guide.icon} className="h-4 w-4" />
@@ -160,14 +173,14 @@ export default async function GuidePage({ params }: { params: Promise<{ locale: 
               <h1 className="mt-2 text-balance text-[1.9rem] font-bold leading-[1.15] tracking-[-0.02em] sm:text-[2.6rem]">{tr(guide.question, locale)}</h1>
               <p className="mt-3 text-pretty text-[1.05rem] leading-relaxed text-ink-soft sm:text-lg">{tr(guide.summary, locale) || tr(guide.intro, locale)}</p>
 
-              {/* Fees & rules (popup) and Share. */}
-              <div className="mt-5 flex flex-wrap items-center gap-2.5">
+              {/* Fees & rules (popup), Share and, for the licence, Test practice: equal tiles on phones, pills on wider screens. */}
+              <div className={`mt-5 grid gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-2.5 ${guide.slug === "driving-licence" ? "grid-cols-3" : "grid-cols-2"}`}>
                 {hasKeyFacts && (
                   <InfoDialog
                     label={ne ? "दस्तुर र नियम" : "Fees & rules"}
                     title={ne ? "दस्तुर र नियम" : "Fees and rules"}
                     closeLabel={t.close}
-                    buttonClassName="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-white px-4 text-sm font-semibold text-brand shadow-card ring-1 ring-paper-line transition-[box-shadow,transform] duration-150 hover:shadow-pop active:scale-[.98]"
+                    buttonClassName={`${ACTION} bg-white text-brand ring-1 ring-paper-line hover:shadow-pop`}
                     icon={<ReceiptText className="h-4 w-4" aria-hidden="true" />}
                   >
                   <dl className="-mt-3 divide-y divide-paper-line">
@@ -242,12 +255,12 @@ export default async function GuidePage({ params }: { params: Promise<{ locale: 
                   )}
                   </InfoDialog>
                 )}
-                <ShareGuide locale={locale} title={tr(guide.question, locale)} />
+                <ShareGuide locale={locale} title={tr(guide.question, locale)} buttonClassName={`${ACTION} bg-white text-ink ring-1 ring-paper-line hover:shadow-pop`} />
                 {/* Driving licence only: practice for the written test and the colour check. */}
                 {guide.slug === "driving-licence" && (
                   <Link
                     href={`/${locale}/guide/${guide.slug}/practice`}
-                    className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-ink px-4 text-sm font-semibold text-white shadow-card transition-[background-color,transform] duration-150 hover:bg-ink/90 active:scale-[.98]"
+                    className={`${ACTION} bg-ink text-white hover:bg-ink/90`}
                   >
                     <GraduationCap className="h-4 w-4" aria-hidden="true" />
                     {ne ? "परीक्षा अभ्यास" : "Test practice"}
@@ -262,8 +275,8 @@ export default async function GuidePage({ params }: { params: Promise<{ locale: 
         </div>
       </header>
 
-      {/* One narrow column; each section is its own box (see .guide-body in globals.css). */}
-      <div className="container-page guide-body mt-5 max-w-3xl sm:mt-6">
+      {/* One step at a time (see GuideTabs); each section is its own box (see .guide-body in globals.css). */}
+      <GuideTabs locale={locale} tabs={steps} className="container-page guide-body mt-5 max-w-3xl sm:mt-6">
         <GuideFlow
           locale={locale}
           slug={guide.slug}
@@ -294,7 +307,7 @@ export default async function GuidePage({ params }: { params: Promise<{ locale: 
         />
 
         {/* ---------- Apply online ---------- */}
-        <section id="finish" className="scroll-mt-24" aria-labelledby="finish-title">
+        <section id="finish" className="scroll-mt-36" aria-labelledby="finish-title">
           <StageTitle n={applyN} id="finish-title" locale={locale}>{guide.officialPortal ? continueLabel : ne ? "पेस गर्नुअघि र पछि" : "Before and after you submit"}</StageTitle>
           <div className="mt-4 space-y-6">
             {/* The one big action: who runs it, the address, one button. */}
@@ -372,7 +385,7 @@ export default async function GuidePage({ params }: { params: Promise<{ locale: 
 
         {/* ---------- Common questions ---------- */}
         {guide.faqs.length > 0 && (
-          <section id="faq" className="scroll-mt-24" aria-labelledby="faq-title">
+          <section id="faq" className="scroll-mt-36" aria-labelledby="faq-title">
             <StageTitle id="faq-title">{ne ? "प्रायः सोधिने प्रश्न" : "Common questions"}</StageTitle>
             <div className="box-bleed mt-4 divide-y divide-paper-line">
               {guide.faqs.map((f, i) => (
@@ -388,19 +401,9 @@ export default async function GuidePage({ params }: { params: Promise<{ locale: 
           </section>
         )}
 
-        {/* ---------- Feedback + report ---------- */}
-        <div role="region" className="panel grid gap-6 p-5 sm:p-6 md:grid-cols-2 md:divide-x md:divide-paper-line" aria-label={ne ? "प्रतिक्रिया" : "Feedback"}>
-          <FeedbackWidget locale={locale} guide={guide.slug} />
-          <div className="md:pl-6">
-            <h2 className="text-lg font-bold">{t.report}</h2>
-            <p className="mb-3 mt-1 text-sm text-ink-soft">{ne ? "कुनै बटन, नाम वा नियम फेरिएको छ भने हामीलाई भन्नुहोस्।" : "Tell us if a button, name or rule has changed."}</p>
-            <ReportDialog locale={locale} guide={guide.slug} />
-          </div>
-        </div>
-
         {/* ---------- Related ---------- */}
         {related.length > 0 && (
-          <section aria-labelledby="related-title">
+          <section id="related" aria-labelledby="related-title">
             <h2 id="related-title" className="section-title">{t.related}</h2>
             <ul className="mt-4 grid gap-3 sm:grid-cols-2">
               {related.map((g) => (
@@ -423,7 +426,12 @@ export default async function GuidePage({ params }: { params: Promise<{ locale: 
             </ul>
           </section>
         )}
-      </div>
+      </GuideTabs>
+
+      {/* Feedback: asked in a popup once someone has spent a while on the guide. The report form
+          opens from that popup and from steps ("still unclear"), so it's always on the page. */}
+      <FeedbackPrompt locale={locale} guide={guide.slug} />
+      <ReportDialog locale={locale} guide={guide.slug} button={false} />
 
       {/* Chat helper: free, answers from this guide in the browser. */}
       <AssistantChat
@@ -433,16 +441,6 @@ export default async function GuidePage({ params }: { params: Promise<{ locale: 
         suggestions={ne ? ["के-के कागजात चाहिन्छ?", "आवेदन कहाँ दिने?", "पेस गरेपछि के हुन्छ?"] : ["What documents do I need?", "Where do I apply?", "What happens after I apply?"]}
       />
 
-      <SectionNav
-        locale={locale}
-        sections={[
-          hasChoice && { id: "purpose", label: ne ? "उद्देश्य" : "Purpose" },
-          { id: "video", label: ne ? "कसरी गर्ने" : "How to do it" },
-          { id: "need", label: ne ? "कागजात" : "Documents" },
-          { id: "finish", label: ne ? "आवेदन" : "Apply" },
-          guide.faqs.length > 0 && { id: "faq", label: ne ? "प्रश्न" : "Questions" },
-        ].filter((x): x is { id: string; label: string } => !!x)}
-      />
     </article>
   );
 }

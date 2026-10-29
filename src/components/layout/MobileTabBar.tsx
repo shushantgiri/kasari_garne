@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FilePen, Home, ImageUp, LayoutGrid, Search } from "lucide-react";
+import { FilePen, Home, LayoutGrid, Search, Wrench } from "lucide-react";
 import type { Locale } from "@/lib/content/types";
 
 /**
@@ -17,7 +17,7 @@ export function MobileTabBar({ locale }: { locale: Locale }) {
     { href: `/${locale}`, label: ne ? "गृहपृष्ठ" : "Home", Icon: Home, active: pathname === `/${locale}` },
     { href: `/${locale}/guides`, label: ne ? "सेवाहरू" : "Services", Icon: LayoutGrid, active: /\/(guides|guide)\b/.test(pathname) },
     { href: `/${locale}/tools/letters`, label: ne ? "निवेदन" : "Application", Icon: FilePen, active: pathname.startsWith(`/${locale}/tools/letters`) },
-    { href: `/${locale}/tools/photo`, label: ne ? "फोटो" : "Photo", Icon: ImageUp, active: pathname.startsWith(`/${locale}/tools/photo`) },
+    { href: `/${locale}/tools`, label: ne ? "उपकरण" : "Tools", Icon: Wrench, active: pathname.startsWith(`/${locale}/tools`) && !pathname.startsWith(`/${locale}/tools/letters`) },
     { href: `/${locale}/search`, label: ne ? "खोज" : "Search", Icon: Search, active: pathname.startsWith(`/${locale}/search`) },
   ];
 

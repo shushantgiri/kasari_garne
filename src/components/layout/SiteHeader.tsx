@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FilePen, ImageUp, LayoutGrid, Search } from "lucide-react";
+import { FilePen, LayoutGrid, Search, Wrench } from "lucide-react";
 import type { Locale } from "@/lib/content/types";
 import { dict } from "@/lib/i18n";
 import { Logo } from "./Logo";
@@ -16,10 +16,12 @@ export function SiteHeader({ locale }: { locale: Locale }) {
   const switchHref = pathname.replace(/^\/(ne|en)(?=\/|$)/, `/${other}`);
   const browse = locale === "ne" ? "सेवाहरू" : "Services";
   const searchLabel = locale === "ne" ? "खोज्नुहोस्" : "Search";
-  const photoLabel = locale === "ne" ? "फोटो साइज" : "Photo size";
+  const toolsLabel = locale === "ne" ? "उपकरण" : "Tools";
   const lettersLabel = locale === "ne" ? "निवेदन" : "Application";
   const isActive = (seg: string) => pathname.startsWith(`/${locale}/${seg}`);
   const navCls = (seg: string) => `btn-ghost ${isActive(seg) ? "bg-paper-warm text-ink" : ""}`;
+  // Every tool except the applications, which have their own link.
+  const toolsActive = isActive("tools") && !isActive("tools/letters");
 
   return (
     <header className="sticky top-0 z-40 border-b border-paper-line bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
@@ -44,9 +46,9 @@ export function SiteHeader({ locale }: { locale: Locale }) {
             <FilePen className="h-5 w-5" aria-hidden="true" />
             {lettersLabel}
           </Link>
-          <Link href={`/${locale}/tools/photo`} className={navCls("tools/photo")} aria-current={isActive("tools/photo") ? "page" : undefined}>
-            <ImageUp className="h-5 w-5" aria-hidden="true" />
-            {photoLabel}
+          <Link href={`/${locale}/tools`} className={`btn-ghost ${toolsActive ? "bg-paper-warm text-ink" : ""}`} aria-current={toolsActive ? "page" : undefined}>
+            <Wrench className="h-5 w-5" aria-hidden="true" />
+            {toolsLabel}
           </Link>
           <TextSizeButton locale={locale} />
           <Link href={switchHref} hrefLang={other} lang={other} className="btn-secondary ml-1 min-h-[44px] px-3 text-sm">

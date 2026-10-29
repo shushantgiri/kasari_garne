@@ -8,9 +8,10 @@ import { digits } from "@/lib/i18n";
 import { ColorTest } from "./ColorTest";
 import { MockExam } from "./MockExam";
 
+
 /**
  * Practice for the driving licence: the mock written test (like the computer test at the office)
- * and, on its own, the colour vision check.
+ * and the colour vision check.
  */
 export function LicenceQuiz({ locale }: { locale: Locale }) {
   const ne = locale === "ne";

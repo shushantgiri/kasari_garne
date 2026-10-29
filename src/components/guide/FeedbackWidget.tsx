@@ -14,7 +14,8 @@ const REASONS = [
   { id: "other", ne: "अरू समस्या", en: "Something else" },
 ];
 
-export function FeedbackWidget({ locale, guide }: { locale: Locale; guide: string }) {
+/** `onDone` runs once feedback is sent (the popup uses it to close itself). */
+export function FeedbackWidget({ locale, guide, onDone }: { locale: Locale; guide: string; onDone?: () => void }) {
   const t = dict(locale);
   const ne = locale === "ne";
   const [stage, setStage] = useState<"ask" | "reason" | "done">("ask");
@@ -28,7 +29,10 @@ export function FeedbackWidget({ locale, guide }: { locale: Locale; guide: strin
     setError(null);
     const r = await submitFeedback({ guide, useful, reason: reason || undefined, message, locale }).catch(() => ({ ok: false as const, error: "server" as const }));
     setBusy(false);
-    if (r.ok) setStage("done");
+    if (r.ok) {
+      setStage("done");
+      onDone?.();
+    }
     else setError(r.error === "personal_data" ? (ne ? "व्यक्तिगत नम्बर हटाएर पठाउनुहोस्।" : "Please remove personal numbers and try again.") : t.formError);
   };
 

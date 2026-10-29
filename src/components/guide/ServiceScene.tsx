@@ -282,11 +282,11 @@ function RoadScene() {
       <line x1="0" y1="102.5" x2="480" y2="102.5" stroke="#fff" strokeWidth="1.4" strokeDasharray="14 12" opacity=".6" />
 
       {/* Far lane: smaller, for depth. */}
-      <Drive x={70} y={98} scale={0.78} secs={14} offset={0}><Bus /></Drive>
-      <Drive x={300} y={98} scale={0.78} secs={14} offset={0.5}><Truck /></Drive>
+      <Drive x={70} y={98} scale={0.78} secs={20} offset={0}><Bus /></Drive>
+      <Drive x={300} y={98} scale={0.78} secs={20} offset={0.5}><Truck /></Drive>
       {/* Near lane. */}
-      <Drive x={200} y={116} secs={8} offset={0.2}><Car /></Drive>
-      <Drive x={400} y={116} secs={8} offset={0.7}><Motorbike /></Drive>
+      <Drive x={200} y={116} secs={12} offset={0.2}><Car /></Drive>
+      <Drive x={400} y={116} secs={12} offset={0.7}><Motorbike /></Drive>
     </>
   );
 }

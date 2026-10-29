@@ -6,8 +6,11 @@ import type { Locale } from "@/lib/content/types";
 import { dict } from "@/lib/i18n";
 import { submitReport, type ActionResult } from "@/app/actions";
 
-/** Opens from the "report" button or from any step via `kg:report` with { stepId, stepTitle }. */
-export function ReportDialog({ locale, guide }: { locale: Locale; guide: string }) {
+/**
+ * Opens from the "report" button or from anywhere via `kg:report` (with { stepId, stepTitle } from a step).
+ * `button={false}` mounts just the dialog, for pages that open it only through the event.
+ */
+export function ReportDialog({ locale, guide, button = true }: { locale: Locale; guide: string; button?: boolean }) {
   const t = dict(locale);
   const ne = locale === "ne";
   const ref = useRef<HTMLDialogElement>(null);
@@ -35,10 +38,12 @@ export function ReportDialog({ locale, guide }: { locale: Locale; guide: string 
 
   return (
     <>
-      <button type="button" className="btn-secondary" onClick={() => { setStep(null); ref.current?.showModal(); }}>
-        <Flag className="h-4 w-4" aria-hidden="true" />
-        {t.reportButton}
-      </button>
+      {button && (
+        <button type="button" className="btn-secondary" onClick={() => { setStep(null); ref.current?.showModal(); }}>
+          <Flag className="h-4 w-4" aria-hidden="true" />
+          {t.reportButton}
+        </button>
+      )}
       <dialog
         ref={ref}
         className="w-[min(92vw,32rem)] rounded-2xl p-0 backdrop:bg-ink/40"
