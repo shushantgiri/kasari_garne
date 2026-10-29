@@ -4,14 +4,14 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Locale } from "@/lib/content/types";
 import { adToBs, bsToAd, daysInBsMonth, nepalNow, BS_MAX_YEAR, BS_MIN_YEAR, BS_MONTHS_EN, BS_MONTHS_NE, WEEKDAYS_NE, WEEKDAYS_SHORT_NE, type Bs } from "@/lib/bs";
-import { HOLIDAY_SOURCE, HOLIDAY_SOURCE_URL, HOLIDAYS_2083, HOLIDAY_YEAR, holidaysOn } from "@/lib/content/holidays";
+import { HOLIDAY_SOURCE, HOLIDAY_SOURCE_URL, HOLIDAYS_2083, HOLIDAY_YEAR, holidaysOn, isWeekend } from "@/lib/content/holidays";
 import { digits } from "@/lib/i18n";
 
 const EN_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const AD_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 /**
- * A Nepali (BS) month calendar: Saturdays and holidays in red, days off for some people marked with a
+ * A Nepali (BS) month calendar: weekends (Saturday and Sunday) and holidays in red, days off for some people marked with a
  * blue dot, the AD date small in each cell. Tap a day to see what it is; arrows slide month to month.
  * Below, the next few holidays in a short list.
  */
@@ -92,10 +92,10 @@ export function BsCalendar({ locale }: { locale: Locale }) {
           </button>
         </div>
 
-        {/* Weekday names, Saturday in red. */}
+        {/* Weekday names, the weekend in red. */}
         <div className="grid grid-cols-7 px-2 pt-2 text-center text-xs font-semibold">
           {(ne ? WEEKDAYS_SHORT_NE : EN_SHORT).map((w, i) => (
-            <span key={w} className={i === 6 ? "text-brand" : "text-ink-faint"}>{w}</span>
+            <span key={w} className={isWeekend(i) ? "text-brand" : "text-ink-faint"}>{w}</span>
           ))}
         </div>
 
@@ -104,7 +104,7 @@ export function BsCalendar({ locale }: { locale: Locale }) {
           {cells.map((c, i) => {
             if (!c) return <span key={`e${i}`} />;
             const hs = holidaysOn(view.year, view.month, c.day);
-            const off = c.weekday === 6 || hs.some((h) => !h.only);
+            const off = isWeekend(c.weekday) || hs.some((h) => !h.only);
             const some = !off && hs.length > 0;
             const sel = picked === c.day;
             return (
@@ -145,7 +145,7 @@ export function BsCalendar({ locale }: { locale: Locale }) {
                 ))}
               </ul>
             ) : (
-              <p className="mt-0.5 text-sm text-ink-faint">{pickedCell.weekday === 6 ? (ne ? "शनिबार बिदा" : "Saturday, closed") : ne ? "कार्यालय खुल्ने दिन" : "Offices open"}</p>
+              <p className="mt-0.5 text-sm text-ink-faint">{isWeekend(pickedCell.weekday) ? (ne ? "साप्ताहिक बिदा" : "Weekend, closed") : ne ? "कार्यालय खुल्ने दिन" : "Offices open"}</p>
             )}
           </div>
         )}

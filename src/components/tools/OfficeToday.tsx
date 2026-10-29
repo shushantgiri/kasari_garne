@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CalendarX2, Clock, ShieldCheck } from "lucide-react";
+import { CalendarX2, Clock, Moon, ShieldCheck, Sunrise } from "lucide-react";
 import type { Locale } from "@/lib/content/types";
 import { adToBs, nepalNow, BS_MONTHS_EN, BS_MONTHS_NE, WEEKDAYS_EN, WEEKDAYS_NE } from "@/lib/bs";
 import { HOLIDAY_YEAR, officeDay, SERVICES_OPEN_NOTE, type OfficeDay } from "@/lib/content/holidays";
@@ -15,7 +15,7 @@ interface Today {
   bsDay: number;
   month: string;
   weekday: string;
-  next?: string;
+  next?: { when: string; tomorrow: boolean; opens: number };
 }
 
 /** Hours like "१० बजेदेखि ५ बजेसम्म" (24h → 12h, as offices write it). */
@@ -29,18 +29,17 @@ function compute(ne: boolean): Today {
   const bs = adToBs(date);
   const wd = date.getDay();
   const day = officeDay(bs.year, bs.month, bs.day, wd);
-  let next: string | undefined;
-  if (day.kind === "saturday" || day.kind === "holiday") {
-    // The next day offices open.
-    for (let i = 1; i < 20; i++) {
-      const d = new Date(date);
-      d.setDate(d.getDate() + i);
-      const b = adToBs(d);
-      const k = officeDay(b.year, b.month, b.day, d.getDay()).kind;
-      if (k === "open" || k === "servicesOpen") {
-        next = ne ? `${WEEKDAYS_NE[d.getDay()]}, ${BS_MONTHS_NE[b.month - 1]} ${digits(b.day, "ne")}` : `${WEEKDAYS_EN[d.getDay()]}, ${BS_MONTHS_EN[b.month - 1]} ${b.day}`;
-        break;
-      }
+  let next: Today["next"];
+  // The next day offices open, for "closed now" and closed days.
+  for (let i = 1; i < 20; i++) {
+    const d = new Date(date);
+    d.setDate(d.getDate() + i);
+    const b = adToBs(d);
+    const od = officeDay(b.year, b.month, b.day, d.getDay());
+    if (od.kind === "open" || od.kind === "servicesOpen") {
+      const when = ne ? `${WEEKDAYS_NE[d.getDay()]}, ${BS_MONTHS_NE[b.month - 1]} ${digits(b.day, "ne")}` : `${WEEKDAYS_EN[d.getDay()]}, ${BS_MONTHS_EN[b.month - 1]} ${b.day}`;
+      next = { when, tomorrow: i === 1, opens: od.hours[0] };
+      break;
     }
   }
   return {
@@ -60,7 +59,28 @@ const TONES = {
   ok: { card: "bg-[#EDF4EE] text-[#1F4A32] ring-[#D3E5D8]", accent: "#2E6A43" },
   warn: { card: "bg-[#FAF2E1] text-[#5E410F] ring-[#ECDEBD]", accent: "#9A6A12" },
   brand: { card: "bg-[#FBECEA] text-[#6E2219] ring-[#F1D5D0]", accent: "#A8382A" },
+  night: { card: "bg-[#EEF0F4] text-[#262D3B] ring-[#DADFE8]", accent: "#4A5672" },
 };
+
+/** The working day as a bar from 6 am to 8 pm: office hours filled, a dot for now. */
+function DayBar({ hours, now, accent, ne }: { hours: [number, number]; now: number; accent: string; ne: boolean }) {
+  const A = 6;
+  const B = 20;
+  const pos = (h: number) => `${((Math.min(B, Math.max(A, h)) - A) / (B - A)) * 100}%`;
+  const h12 = (x: number) => (x > 12 ? x - 12 : x);
+  return (
+    <div className="mt-3 max-w-sm" aria-hidden="true">
+      <div className="relative h-2 rounded-full bg-black/[.07]">
+        <span className="absolute inset-y-0 rounded-full" style={{ left: pos(hours[0]), right: `calc(100% - ${pos(hours[1])})`, background: accent, opacity: 0.85 }} />
+        <span className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-white shadow-[0_1px_4px_rgba(27,34,48,.35)] transition-[left] duration-700" style={{ left: pos(now), background: "#1B2230" }} />
+      </div>
+      <div className="relative mt-1.5 h-4 text-[0.7rem] font-semibold opacity-60">
+        <span className="absolute -translate-x-1/2" style={{ left: pos(hours[0]) }}>{ne ? `${digits(h12(hours[0]), "ne")} बजे` : `${h12(hours[0])} am`}</span>
+        <span className="absolute -translate-x-1/2" style={{ left: pos(hours[1]) }}>{ne ? `${digits(h12(hours[1]), "ne")} बजे` : `${h12(hours[1])} pm`}</span>
+      </div>
+    </div>
+  );
+}
 
 /** A ring that empties as the office day runs out; the time left in the middle. */
 function Countdown({ left, total, top, bottom, accent }: { left: number; total: number; top: string; bottom: string; accent: string }) {
@@ -83,9 +103,9 @@ function Countdown({ left, total, top, bottom, accent }: { left: number; total: 
 
 /**
  * "Are government offices open today?" — from the 2083 holiday notice and office hours, in Nepal time.
- * A calm tinted card: green when open, red on a Saturday or holiday (with the next working day), amber on
- * holidays when citizenship, passport and transport offices still serve. On the right, a ring counts down
- * the office day.
+ * A calm tinted card: green when open, red on the weekend or a holiday (with the next working day), amber on
+ * holidays when citizenship, passport and transport offices still serve, slate once the day is over (with
+ * when it opens next). A bar shows the office hours and where now is; while open, a ring counts down.
  */
 export function OfficeToday({ locale, compact = false }: { locale: Locale; compact?: boolean }) {
   const ne = locale === "ne";
@@ -101,39 +121,38 @@ export function OfficeToday({ locale, compact = false }: { locale: Locale; compa
 
   if (!today) return <div className="h-[132px] animate-pulse rounded-3xl bg-paper-warm" />;
 
-  const { day, hour, minute } = today;
+  const { day, hour, minute, next } = today;
   const now = hour + minute / 60;
-  const open = day.kind === "open" || day.kind === "servicesOpen";
-  const hours = open ? day.hours : null;
-  const nowOpen = hours ? now >= hours[0] && now < hours[1] : false;
-  const tone = TONES[day.kind === "open" ? "ok" : day.kind === "servicesOpen" ? "warn" : "brand"];
+  const hours = day.kind === "open" || day.kind === "servicesOpen" ? day.hours : null;
+  // Where the day stands: open now, not yet open, done for today, or a closed day.
+  const phase = hours ? (now < hours[0] ? "before" : now < hours[1] ? "open" : "after") : "closed";
+  const tone = TONES[phase === "after" ? "night" : day.kind === "open" ? "ok" : day.kind === "servicesOpen" ? "warn" : "brand"];
+  const h12 = (x: number) => (x > 12 ? x - 12 : x);
+  const nextText = next && (next.tomorrow ? (ne ? `भोलि ${n(h12(next.opens))} बजे` : `Tomorrow, ${h12(next.opens)} am`) : `${next.when}${ne ? `, ${n(h12(next.opens))} बजे` : `, ${h12(next.opens)} am`}`);
 
   const title =
-    day.kind === "open"
-      ? ne ? "कार्यालय खुला छ" : "Offices are open"
-      : day.kind === "servicesOpen"
-        ? ne ? "बिदा, तर मुख्य सेवा खुला" : "Holiday, key services open"
-        : day.kind === "saturday"
-          ? ne ? "शनिबार — कार्यालय बन्द" : "Saturday — closed"
-          : ne ? "सार्वजनिक बिदा" : "Public holiday";
+    phase === "after"
+      ? ne ? "आजको समय सकियो" : "Closed for today"
+      : phase === "before"
+        ? ne ? `आज ${n(h12(hours![0]))} बजे खुल्छ` : `Opens today at ${h12(hours![0])} am`
+        : day.kind === "open"
+          ? ne ? "कार्यालय खुला छ" : "Offices are open"
+          : day.kind === "servicesOpen"
+            ? ne ? "बिदा, तर मुख्य सेवा खुला" : "Holiday, key services open"
+            : day.kind === "weekend"
+              ? ne ? `${today.weekday} — साप्ताहिक बिदा` : `${today.weekday} — weekend`
+              : ne ? "सार्वजनिक बिदा" : "Public holiday";
 
-  // The ring: minutes left while open; before opening, the opening hour; after, closed.
-  const leftMin = hours && nowOpen ? Math.round((hours[1] - now) * 60) : 0;
-  const ring = hours
-    ? nowOpen
-      ? { left: leftMin, total: (hours[1] - hours[0]) * 60, top: `${n(Math.floor(leftMin / 60))}:${ne ? digits(String(leftMin % 60).padStart(2, "0"), "ne") : String(leftMin % 60).padStart(2, "0")}`, bottom: ne ? "घण्टा बाँकी" : "left" }
-      : now < hours[0]
-        ? { left: (hours[1] - hours[0]) * 60, total: (hours[1] - hours[0]) * 60, top: n(hours[0]), bottom: ne ? "बजे खुल्छ" : "am opens" }
-        : { left: 0, total: 1, top: ne ? "बन्द" : "Shut", bottom: ne ? "भोलि आउनुहोस्" : "come tomorrow" }
-    : null;
-  const StatusIcon = day.kind === "servicesOpen" ? ShieldCheck : CalendarX2;
+  const leftMin = phase === "open" && hours ? Math.round((hours[1] - now) * 60) : 0;
+  const pad = (v: number) => (ne ? digits(String(v).padStart(2, "0"), "ne") : String(v).padStart(2, "0"));
+  const SideIcon = phase === "after" ? Moon : phase === "before" ? Sunrise : day.kind === "servicesOpen" ? ShieldCheck : CalendarX2;
 
   return (
     <div className={`relative animate-rise rounded-3xl p-4 ring-1 sm:p-5 ${tone.card}`} aria-live="polite">
       <div className="relative flex items-center gap-4">
         <div className="min-w-0 flex-1">
           <p className="inline-flex items-center gap-2 text-sm font-semibold opacity-80">
-            {nowOpen && (
+            {phase === "open" && (
               <span className="relative flex h-2.5 w-2.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60 motion-reduce:animate-none" style={{ background: tone.accent }} />
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full" style={{ background: tone.accent }} />
@@ -143,24 +162,20 @@ export function OfficeToday({ locale, compact = false }: { locale: Locale; compa
           </p>
           <p className="mt-1 text-[1.4rem] font-bold leading-tight tracking-tight sm:text-[1.7rem]">{title}</p>
           {(day.kind === "holiday" || day.kind === "servicesOpen") && <p className="mt-0.5 text-[0.95rem] font-medium opacity-90">{day.names.join(" · ")}</p>}
-          {hours && (
-            <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1 text-sm font-medium">
+          {hours && phase !== "after" && <DayBar hours={hours} now={now} accent={tone.accent} ne={ne} />}
+          {(phase === "after" || phase === "closed") && nextText && (
+            <p className="mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-white/85 px-3 py-1.5 text-sm font-medium">
               <Clock className="h-4 w-4 shrink-0" aria-hidden="true" />
-              {hoursText(hours, ne)}
-            </p>
-          )}
-          {today.next && (
-            <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-white/80 px-3 py-1 text-sm font-medium">
-              {ne ? "अर्को खुल्ने: " : "Next open: "}
-              <span className="font-bold">{today.next}</span>
+              {ne ? "अर्को खुल्ने: " : "Opens next: "}
+              <span className="font-bold">{nextText}</span>
             </p>
           )}
         </div>
-        {ring ? (
-          <Countdown {...ring} accent={tone.accent} />
+        {phase === "open" ? (
+          <Countdown left={leftMin} total={(hours![1] - hours![0]) * 60} top={`${n(Math.floor(leftMin / 60))}:${pad(leftMin % 60)}`} bottom={ne ? "घण्टा बाँकी" : "left"} accent={tone.accent} />
         ) : (
-          <span className="grid h-[84px] w-[84px] shrink-0 place-items-center rounded-full bg-white/80 sm:h-24 sm:w-24">
-            <StatusIcon className="h-9 w-9" style={{ color: tone.accent }} aria-hidden="true" />
+          <span className="grid h-[76px] w-[76px] shrink-0 place-items-center rounded-[1.4rem] bg-white/85 shadow-[0_1px_2px_rgba(27,34,48,.06)] sm:h-[88px] sm:w-[88px]">
+            <SideIcon className="h-9 w-9" strokeWidth={1.8} style={{ color: tone.accent }} aria-hidden="true" />
           </span>
         )}
       </div>

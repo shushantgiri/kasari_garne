@@ -33,6 +33,28 @@ export const TOOLS: Tool[] = [
   { href: "/tools/photo", Icon: ImageUp, tone: "violet", ne: ["फोटो साइज", "फारामले भनेको साइज र KB"], en: ["Photo size", "The size and KB a form asks for"] },
 ];
 
+/** The tools as an app-style icon grid — icon and name only — for the home page. */
+export function ToolIcons({ locale }: { locale: Locale }) {
+  const ne = locale === "ne";
+  return (
+    <ul className="stagger grid grid-cols-3 gap-2.5 sm:grid-cols-6 sm:gap-3">
+      {TOOLS.map((t) => (
+        <li key={t.href}>
+          <Link
+            href={`/${locale}${t.href}`}
+            className="group flex h-full flex-col items-center gap-2 rounded-2xl bg-white px-2 py-3.5 text-center ring-1 ring-paper-line transition-[box-shadow,transform] duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_30px_-20px_rgba(27,34,48,.45)] active:scale-[.97] sm:py-4"
+          >
+            <span className={`grid h-12 w-12 place-items-center rounded-2xl transition-transform duration-300 group-hover:scale-105 ${TONES[t.tone].tile}`}>
+              <t.Icon className="h-6 w-6" strokeWidth={1.9} aria-hidden="true" />
+            </span>
+            <span className="text-[0.85rem] font-semibold leading-tight text-ink sm:text-sm">{ne ? t.ne[0] : t.en[0]}</span>
+          </Link>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /** At the foot of a tool page: the other tools as a row of small cards, so the next one is a tap away. */
 export function ToolMore({ locale, current }: { locale: Locale; current: string }) {
   const ne = locale === "ne";

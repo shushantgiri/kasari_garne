@@ -9,7 +9,7 @@ import { ServiceCard } from "@/components/home/ServiceCard";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { AssistantChat } from "@/components/guide/AssistantChat";
-import { ToolGrid } from "@/components/tools/ToolGrid";
+import { ToolIcons } from "@/components/tools/ToolGrid";
 import { OfficeToday } from "@/components/tools/OfficeToday";
 import { buildKnowledge } from "@/lib/assist/answer";
 
@@ -59,22 +59,19 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(site) }} />
       {/* Hero: one headline, one sentence, the search box. */}
       <section className="mesh-bg grain overflow-hidden border-b border-paper-line">
-
-        <div className="container-page relative py-12 sm:py-16">
+        <div className="container-page relative pb-16 pt-9 sm:pb-20 sm:pt-14">
           <div className="mx-auto max-w-2xl text-center">
             {/* Two deliberate lines on every screen: the topic, then the promise starting with the key words in red. */}
-            <h1 className="animate-rise text-[2.35rem] font-bold leading-[1.12] tracking-[-0.02em] sm:text-[3.5rem]">
+            <h1 className="animate-rise text-[2.15rem] font-bold leading-[1.12] tracking-[-0.02em] sm:text-[3.2rem]">
               <span className="block">{t.heroParts[0].trim()}</span>
               <span className="block">
-                {/* The vertical padding keeps Devanagari marks inside the gradient's clip. */}
                 <span className="text-brand">{t.heroParts[1]}</span>
                 {t.heroParts[2]}
               </span>
             </h1>
-            <p className="mx-auto mt-5 max-w-md animate-rise text-balance text-[1.08rem] leading-relaxed text-ink-soft [animation-delay:80ms] sm:max-w-lg sm:text-xl">{t.heroText}</p>
+            <p className="mx-auto mt-3 max-w-md animate-rise text-balance text-[1.08rem] leading-relaxed text-ink-soft [animation-delay:80ms] sm:max-w-lg sm:text-xl">{t.heroText}</p>
 
-            {/* The search box, with a soft glow behind it. */}
-            <div className="relative z-20 mt-8 animate-rise [animation-delay:120ms]">
+            <div className="relative z-20 mt-6 animate-rise [animation-delay:120ms] sm:mt-8">
               <div className="relative">
                 <SearchBox locale={locale} teasers={toTeasers(guides, departments)} examples={ROTATING[locale]} />
               </div>
@@ -87,7 +84,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                   key={q}
                   href={`/${locale}/search?q=${encodeURIComponent(q)}`}
                   lang={/[a-z]/i.test(q) ? "en" : "ne"}
-                  className="inline-flex min-h-[40px] items-center rounded-full bg-white/80 px-3.5 text-sm text-ink-soft ring-1 ring-paper-line transition-[color,transform,box-shadow] duration-200 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-px hover:text-ink hover:shadow-card hover:ring-ink-faint/40 active:translate-y-0"
+                  className="inline-flex min-h-[38px] items-center rounded-full bg-white px-3.5 text-sm text-ink-soft ring-1 ring-paper-line transition-[color,transform,box-shadow] duration-200 ease-[cubic-bezier(.2,.8,.2,1)] hover:-translate-y-px hover:text-ink hover:shadow-card hover:ring-ink-faint/40 active:translate-y-0"
                 >
                   {q}
                 </Link>
@@ -97,30 +94,36 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </div>
       </section>
 
+      {/* Today: are offices open — lifted over the hero's edge, the first thing people check. */}
+      <div className="container-page relative z-10 -mt-10 max-w-5xl sm:-mt-12">
+        <div className="rounded-[1.6rem] bg-white p-1.5 shadow-[0_18px_40px_-26px_rgba(27,34,48,.5)] ring-1 ring-paper-line">
+          <OfficeToday locale={locale} compact />
+        </div>
+      </div>
+
       {/* Popular services */}
-      <section id="popular" className="container-page scroll-mt-20 pb-10 pt-8 sm:pb-14 sm:pt-10" aria-labelledby="popular-title">
+      <section id="popular" className="container-page max-w-5xl scroll-mt-20 pb-10 pt-9 sm:pb-12 sm:pt-12" aria-labelledby="popular-title">
         <SectionHead id="popular-title" title={t.popularServices} href={`/${locale}/guides`} linkLabel={t.allGuides} />
-        <ul className="stagger mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+        <ul className="stagger mt-4 grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3 md:grid-cols-3">
           {popular.map((g) => (
             <li key={g.slug}><ServiceCard guide={g} locale={locale} /></li>
           ))}
         </ul>
       </section>
 
-      {/* Handy tools, with today's office status first. */}
-      <section className="container-page pb-10 sm:pb-14" aria-labelledby="tools-title">
+      {/* Handy tools, as an app-style icon grid. */}
+      <section className="container-page max-w-5xl pb-10 sm:pb-12" aria-labelledby="tools-title">
         <SectionHead id="tools-title" title={ne ? "उपयोगी उपकरण" : "Handy tools"} href={`/${locale}/tools`} linkLabel={ne ? "सबै" : "All"} />
-        <div className="mt-5 space-y-3">
-          <OfficeToday locale={locale} compact />
-          <ToolGrid locale={locale} />
+        <div className="mt-4">
+          <ToolIcons locale={locale} />
         </div>
       </section>
 
       {/* Recently checked */}
       {recent.length > 0 && (
-        <section className="container-page pb-10 sm:pb-14" aria-labelledby="recent-title">
+        <section className="container-page max-w-5xl pb-10 sm:pb-12" aria-labelledby="recent-title">
           <SectionHead id="recent-title" title={anyVerified ? (ne ? "भर्खरै प्रमाणित" : "Recently verified") : t.recentlyUpdated} />
-          <ul className="panel mt-5 divide-y divide-paper-line overflow-hidden">
+          <ul className="panel mt-4 divide-y divide-paper-line overflow-hidden">
             {recent.map((g) => (
               <li key={g.slug}>
                 <Link href={`/${locale}/guide/${g.slug}`} className="flex min-h-[68px] items-center gap-4 px-4 py-3 transition-colors duration-150 hover:bg-paper-warm">
@@ -150,7 +153,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       />
 
       {/* Request a guide — the only other call to action on the page. */}
-      <section className="container-page">
+      <section className="container-page max-w-5xl">
         <div className="panel flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
           <MessageSquarePlus className="hidden h-8 w-8 shrink-0 text-sky sm:block" aria-hidden="true" strokeWidth={1.6} />
           <div className="flex-1">
@@ -173,7 +176,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 function SectionHead({ id, title, href, linkLabel }: { id: string; title: string; href?: string; linkLabel?: string }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <h2 id={id} className="section-title">{title}</h2>
+      <h2 id={id} className="text-[1.25rem] font-bold tracking-tight text-ink sm:text-[1.4rem]">{title}</h2>
       {href && (
         <Link href={href} className="inline-flex min-h-[44px] shrink-0 items-center gap-1 text-sm font-semibold text-ink-soft hover:text-ink">
           {linkLabel}

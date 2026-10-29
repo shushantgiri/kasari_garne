@@ -32,7 +32,8 @@ test("vehicle tax: years behind add each year's tax and fine", () => {
 
 test("holidays: Saturdays closed, Dashain closed, Republic Day services open", () => {
   // Kartik 14 2083 is a Saturday (gazette).
-  assert.equal(officeDay(2083, 7, 14, 6).kind, "saturday");
+  assert.equal(officeDay(2083, 7, 14, 6).kind, "weekend");
+  assert.equal(officeDay(2083, 7, 15, 0).kind, "weekend");
   assert.equal(officeDay(2083, 7, 3, 1).kind, "holiday");
   assert.equal(officeDay(2083, 2, 15, 5).kind, "servicesOpen");
   const teej = officeDay(2083, 5, 29, 1);
@@ -41,10 +42,8 @@ test("holidays: Saturdays closed, Dashain closed, Republic Day services open", (
 });
 
 test("office hours follow the season and Fridays", () => {
-  assert.deepEqual(officeHours(1, 5, 1), [10, 17]);
-  assert.deepEqual(officeHours(7, 16, 1), [10, 16]);
-  assert.deepEqual(officeHours(10, 16, 1), [10, 17]);
-  assert.deepEqual(officeHours(3, 3, 5), [10, 15]);
+  assert.deepEqual(officeHours(1, 5, 1), [9, 17]);
+  assert.deepEqual(officeHours(7, 16, 5), [9, 17]);
 });
 
 test("holiday list has valid dates", () => {

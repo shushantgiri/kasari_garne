@@ -1,6 +1,10 @@
 /**
  * Government holidays and office hours for 2083 BS, from the Ministry of Home Affairs notice in the
- * Nepal Gazette (खण्ड ७५, संख्या ६७, भाग ५, फागुन १८ गते २०८२). Weekly holiday: Saturday only.
+ * Nepal Gazette (खण्ड ७५, संख्या ६७, भाग ५, फागुन १८ गते २०८२).
+ *
+ * The weekly holiday is Saturday and Sunday, with offices open 9 am to 5 pm Monday to Friday: the Cabinet
+ * changed this from चैत २३, २०८२ (6 April 2026), after the notice above, and Hamro Patro marks every
+ * Sunday of 2083 as a weekend holiday too.
  *
  * Section 10.1 of the notice says that on many festival and day holidays the offices for citizenship,
  * passport, transport (licence, vehicle registration and renewal), national ID, land revenue and
@@ -78,25 +82,23 @@ export function holidaysOn(year: number, month: number, day: number): Holiday[] 
   return HOLIDAYS_2083.filter((h) => h.month === month && h.day === day);
 }
 
-/**
- * Office hours on a BS date, as hours of the day [open, close]: 10–5 from Baisakh 1 to Kartik 15 and
- * from Magh 16 to the end of Chaitra; 10–4 from Kartik 16 to Magh 15; Fridays 10–3. `weekday` 0 = Sunday.
- */
-export function officeHours(month: number, day: number, weekday: number): [number, number] {
-  if (weekday === 5) return [10, 15];
-  const winter = (month === 7 && day >= 16) || month === 8 || month === 9 || (month === 10 && day <= 15);
-  return [10, winter ? 16 : 17];
+/** Office hours, as hours of the day [open, close]: 9 am to 5 pm on every working day (Monday to Friday). */
+export function officeHours(_month: number, _day: number, _weekday: number): [number, number] {
+  return [9, 17];
 }
 
+/** Saturday and Sunday are the weekly holiday. `weekday` 0 = Sunday. */
+export const isWeekend = (weekday: number) => weekday === 0 || weekday === 6;
+
 export type OfficeDay =
-  | { kind: "saturday" }
+  | { kind: "weekend" }
   | { kind: "holiday"; names: string[] }
   | { kind: "servicesOpen"; names: string[]; hours: [number, number] }
   | { kind: "open"; hours: [number, number]; partial: Holiday[] };
 
 /** Whether government offices are open on a BS date. */
 export function officeDay(year: number, month: number, day: number, weekday: number): OfficeDay {
-  if (weekday === 6) return { kind: "saturday" };
+  if (isWeekend(weekday)) return { kind: "weekend" };
   const hs = holidaysOn(year, month, day);
   const everyone = hs.filter((h) => !h.only);
   const hours = officeHours(month, day, weekday);
